@@ -19,6 +19,25 @@
 <script src="/static/js/csv.min.js"></script>
 <script src="/static/js/angular-popups.js"></script>
 <script src="/static/js/admin.js"></script>
+
+{% endblock %}
+
+{% block js %}
+"angularjs/1.5/angular-sanitize.min.js,"+
+"angularjs/1.5/ng-file-upload-shim.min.js,"+
+"angularjs/1.5/ng-file-upload.min.js,"+
+"igniteUI/js/infragistics.dv.js,"+
+"igniteUI/js/modules/infragistics.documents.core.js,"+
+"igniteUI/js/modules/infragistics.excel.js,"+
+"igniteUI/js/modules/infragistics.gridexcelexporter.js,"+
+"igniteUI/js/filesaver.js,"+
+"igniteUI/js/blob.js,"+
+"angularjs/1.5/ng-tags-input.min.js,"+
+"js/csv.min.js,"+
+"js/angular-popups.js,"+
+"js/admin.js"
+{% endblock %}
+{% block content %}
 <script>
     var search_student = function(uid){
         var $scope = angular.element($("#adminApp")).scope();
@@ -34,8 +53,6 @@
     }
 
 </script>
-{% endblock %}
-{% block content %}
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
 <div ng-app="physiclab.admin" class="experiment-list-page container-fluid" ng-controller="adminCtrl" id="adminApp">
   <div class="row">
@@ -528,4 +545,5 @@
     </div>
   </div>
 </div>
+
 {% endblock %}

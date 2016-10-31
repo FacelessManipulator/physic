@@ -24,7 +24,27 @@
     }
 </script>
 {% endblock %}
+{% block js %}
+"angularjs/1.5/angular-sanitize.min.js,"+
+"angularjs/1.5/ng-file-upload-shim.min.js,"+
+"angularjs/1.5/ng-file-upload.min.js,"+
+"js/angular-popups.js,"+
+"jmeditor/mathquill-0.9.1/mathquill.min.js,"+
+"jmeditor/JMEditor.js,"+
+"bower_components/moment/min/moment.min.js,"+
+"bower_components/angular-ui-calendar/src/calendar.js,"+
+"bower_components/fullcalendar/dist/fullcalendar.min.js,"+
+"bower_components/fullcalendar/dist/gcal.js,"+
+"js/experiment-list.js"
+
+{% endblock %}
 {% block content %}
+<script>
+    var changeToReport = function(rid){
+        var $scope = angular.element($("#experimentApp")).scope();
+        $scope.changeReport(rid);
+    }
+</script>
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
 <div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl">
   <div class="row">

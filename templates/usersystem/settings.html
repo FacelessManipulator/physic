@@ -19,7 +19,24 @@
 <script src="/static/js/setting.js"></script>
 
 {% endblock %}
+{% block js %}
+"angularjs/1.5/ng-file-upload-shim.min.js,"+
+"angularjs/1.5/ng-file-upload.min.js,"+
+js/setting.js"
+
+{% endblock %}
 {% block content %}
+<script>
+    var institutes = [{% for institute in institutes %}{'name':'{{institute.name}}','iid':{{institute.iid}},
+                      'major':[{% for major in institute.major %}{'name':'{{major.name}}', 'mid':{{major.mid}},
+                      'student_class': [{% for student_class in major.student_class %}{'name':'{{student_class.name}}',
+                      'cid':{{student_class.cid}}}, {% endfor %} ]},{% endfor %}]},{% endfor %}];
+    {% if User.student_class %}
+    var m_institute = {{User.student_class.major.institute.iid}};
+    var m_major = {{User.student_class.major.mid}};
+    var m_class = {{User.student_class.cid}};
+    {% endif %}
+</script>
 <div ng-app="physiclab.settingApp" class="setting-page container-fluid">
     <div class="row">
         {% include "navbar.html" %}

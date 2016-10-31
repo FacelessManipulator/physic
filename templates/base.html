@@ -20,6 +20,7 @@
     <!--Loading Flat-UI -->
     <link href="/static/flatui/flat-ui.min.css" type="text/css" rel="stylesheet">
     <link rel="stylesheet" href="/static/fonts/font-awesome/3.2.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/all.css">
     {% block css %}
     {% endblock %}
 
@@ -36,30 +37,56 @@
     <script src="/static/flatui/flat-ui.min.js"></script>
     <script src="/static/flatui/application.js"></script>
 
-    <script src="/static/angularjs/1.5/angular.min.js"></script>
-    <script src="/static/angularjs/1.5/angular-animate.min.js"></script>
-    <script src="/static/angularjs/1.5/angular-md5.min.js"></script>
-    <!-- Ignite UI Required Combined JavaScript Files -->
-    <script src="/static/igniteUI/js/infragistics.core.js"></script>
-    <script src="/static/igniteUI/js/infragistics.lob.js"></script>
-    <script src="/static/igniteUI/js/infragistics.dv.js"></script>
-    <script src="/static/igniteUI/js/igniteui-angular.min.js"></script>
+    <script src="/static/igniteUI/js/infragistics.loader.js"></script>
 
-    <script src="/static/oth-module/form.js"></script>
-    <script src="/static/js/version-directive.js"></script>
-    <script src="/static/js/application.js"></script>
+    <!--<script src="/static/angularjs/1.5/angular.min.js"></script>-->
+    <!--<script src="/static/angularjs/1.5/angular-animate.min.js"></script>-->
+    <!--<script src="/static/angularjs/1.5/angular-md5.min.js"></script>-->
+    <!--&lt;!&ndash; Ignite UI Required Combined JavaScript Files &ndash;&gt;-->
+    <!--<script src="/static/igniteUI/js/infragistics.core.js"></script>-->
+    <!--<script src="/static/igniteUI/js/infragistics.lob.js"></script>-->
+    <!--<script src="/static/igniteUI/js/infragistics.dv.js"></script>-->
+    <!--<script src="/static/igniteUI/js/igniteui-angular.min.js"></script>-->
 
-    {% block script%}
-    {% endblock%}
+    <!--<script src="/static/oth-module/form.js"></script>-->
+    <!--<script src="/static/js/version-directive.js"></script>-->
+    <!--<script src="/static/js/application.js"></script>-->
+
+    <!--{% block script%}-->
+    <!--{% endblock%}-->
 </head>
 <body>
 <!--[if lt IE 7]>
 <p class="browsehappy">您正在使用一款<strong>过时的</strong> 浏览器. 请 <a href="http://browsehappy.com/">升级您的浏览器</a> 以提升您的体验.</p>
 <![endif]-->
+<div class="mubu" id="mubu">
+  <div class="loader load6">加载中</div>
+</div>
 
+    {% block content %}
+    {% endblock %}
 
-{% block content%}
-{% endblock %}
+    <script>
+        $.ig.loader({
+	        scriptPath: "/static/",
+	        cssPath: "/static/",
+	        resources:
+	            "angularjs/1.5/angular.min.js,"+
+	            "angularjs/1.5/angular-animate.min.js,"+
+	            "angularjs/1.5/angular-md5.min.js,"+
+	            "igniteUI/js/infragistics.core.js,"+
+	            "igniteUI/js/infragistics.lob.js,"+
+	            "igniteUI/js/igniteui-angular.min.js,"+
+	            "oth-module/form.js,"+
+	            "js/version-directive.js,"+
+	            "js/application.js,"+
+	            {% block js %}
+                {% endblock %}
+	    });
+	    $.ig.loader(function(){$("#mubu").hide();});
+
+    </script>
+
 
 </body>
 </html>

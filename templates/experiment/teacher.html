@@ -34,7 +34,37 @@
 </script>
 <script src="/static/js/teacher.js"></script>
 {% endblock %}
+{% block js %}
+"angularjs/1.5/angular-sanitize.min.js,"+
+"angularjs/1.5/angular-drag.js,"+
+"js/angular-popups.js,"+
+"igniteUI/js/infragistics.dv.js,"+
+"igniteUI/js/modules/infragistics.documents.core.js,"+
+"igniteUI/js/modules/infragistics.excel.js,"+
+"igniteUI/js/modules/infragistics.gridexcelexporter.js,"+
+"igniteUI/js/modules/infragistics.ui.grid.summaries.js,"+
+"igniteUI/js/filesaver.js,"+
+"igniteUI/js/blob.js,"+
+"bootstrap/ui-bootstrap-tpls-0.13.0.js,"+
+"bower_components/moment/min/moment.min.js,"+
+"bower_components/fullcalendar/dist/fullcalendar.min.js,"+
+"bower_components/fullcalendar/dist/gcal.js,"+
+"bower_components/angular-ui-calendar/src/calendar.js,"+
+"js/teacher.js"
+{% endblock %}
 {% block content %}
+<script>
+    var changeReport = function(rid){
+        var scope = angular.element($("#teacherApp")).scope();
+        scope.changeReport(rid);
+    };
+    var move_tag = function(tag){
+        var style = tag.getAttribute('style');
+        var tid = tag.getAttribute('tag-id');
+        var scope = angular.element($("#teacherApp")).scope();
+        scope.move_tag(tid,style);
+    };
+</script>
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
 <div ng-app="physiclab.teacher" class="experiment-list-page container-fluid" ng-controller="teacherCtrl" id="teacherApp">
     <div class="row">
