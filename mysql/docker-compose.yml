@@ -1,0 +1,6 @@
+mysql:
+    image: mysql
+    volumes:
+        - /home/data/mysql:/var/lib/mysql
+    environment:
+        - MYSQL_ROOT_PASSWORD=Zxcuahsid1

@@ -1,0 +1,531 @@
+{% extends "base.html"%}
+{% block css %}
+<link href="/static/css/experiment-list.css" rel="stylesheet"/>
+<link href="/static/angularjs/1.5/ng-tags-input.min.css" rel="stylesheet"/>
+<link href="/static/angularjs/1.5/ng-tags-input.bootstrap.min.css" rel="stylesheet"/>
+
+{% endblock%}
+{% block script %}
+<script src="/static/angularjs/1.5/angular-sanitize.min.js"></script>
+<script src="/static/angularjs/1.5/ng-file-upload-shim.min.js"></script>
+<script src="/static/angularjs/1.5/ng-file-upload.min.js"></script>
+<script src="/static/igniteUI/js/infragistics.dv.js"></script>
+<script src="/static/igniteUI/js/modules/infragistics.documents.core.js"></script>
+<script src="/static/igniteUI/js/modules/infragistics.excel.js"></script>
+<script src="/static/igniteUI/js/modules/infragistics.gridexcelexporter.js"></script>
+<script src="/static/igniteUI/js/filesaver.js"></script>
+<script src="/static/igniteUI/js/blob.js"></script>
+<script src="/static/angularjs/1.5/ng-tags-input.min.js"></script>
+<script src="/static/js/csv.min.js"></script>
+<script src="/static/js/angular-popups.js"></script>
+<script src="/static/js/admin.js"></script>
+<script>
+    var search_student = function(uid){
+        var $scope = angular.element($("#adminApp")).scope();
+        $scope.search_student(uid);
+    }
+    var search_teacher =function(uid){
+        var $scope = angular.element($("#adminApp")).scope();
+        $scope.search_teacher(uid);
+    }
+    var changeToExperiment =function(eid){
+        var $scope = angular.element($("#adminApp")).scope();
+        $scope.changeToExperiment(eid);
+    }
+
+</script>
+{% endblock %}
+{% block content %}
+<a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
+<div ng-app="physiclab.admin" class="experiment-list-page container-fluid" ng-controller="adminCtrl" id="adminApp">
+  <div class="row">
+    <div class="col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
+      <div class="row" style="height:40px;">
+        <button class="btn btn-default" style="width:100%;text-align:right;border-radius:0px">
+          <i class="icon-reorder"></i>
+        </button>
+      </div>
+      <div class="row head-img-div div-inverse">
+        <img src="{% if User.photo %}{{User.photo.url}}{% else %}{{ '/static/images/head-img-default.jpg' }}{% endif %}" class="img-circle"/>
+        <span>{{User.name}}</span>
+      </div>
+      <div class="row btn-group">
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'student-list']" ng-click="freshData(user,changeToStudentList)">学生列表</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'teacher-list']" ng-click="freshData(user,changeToTeacherList)">教师列表</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'experiment-list']" ng-click="freshData(experiment,changeToExperimentList)">实验列表</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'student']" ng-click="changeToStudent()">学生详情</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'teacher']" ng-click="changeToTeacher()">教师详情</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'experiment']" ng-click="changeToExperiment()">实验详情</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'website']" ng-click="changeToWebsite()">网站设置</button>
+      </div>
+    </div>
+    <div class="col-md-offset-2 col-md-10">
+      <div class="row address div-inverse" style="position:fixed;z-index:999;">
+        <a href="javascript:;" id="ajax-state"></a>
+        <div class="btn-group" style="position:fixed;right:2px;">
+          <button data-toggle="dropdown" type="button" class="btn btn-inverse btn-sm dropdown-toggle">{{User.name}}<span class="caret"></span></button>
+          <ul role="menu" class="dropdown-menu dropdown-menu-inverse">
+            <li><a href="/setting">个人设置</a></li>
+            <li><a href="/feedback">意见反馈</a></li>
+            <li class="divider"></li>
+            <li><a href="/logout">退出</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="height:40px;" id="top"></div>
+      <div class="row viewer">
+        <div class="container-fluid" ng-show="page1=='teacher-list'">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row block" >
+                <div class="title">
+                  <span>教师列表</span>
+                  <div class="btn-group" style="float:right">
+                    <button id="csvBtn2" class="btn btn-warning btn-sm" ngf-select="parse_csv($file,'teacher')" ngf-pattern="'.csv'" ng-show="user.loaded">导入csv</button>
+                    <dialog ng-if="csvDialog.open['teacher']" for="csvBtn2" close="csvDialog.open['teacher']=false" close-action="esc outerchick">
+                        <div dialog-title>导入教师信息</div>
+                        <div dialog-content>
+                          待导入教师数量:<span>{%templatetag openvariable%}csvDialog.count{%templatetag closevariable%}</span><br>
+                          <table ng-if="csvDialog.count>0">
+                            <thead>样例:</thead>
+                            <th>账号</th><th>姓名</th>
+                            <tr>
+                            <td>{%templatetag openvariable%}csvDialog.sample[0]{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}csvDialog.sample[1]{%templatetag closevariable%}</td>
+                            </tr>
+                          </table>
+                        </div>
+                      <div dialog-buttons><button ng-click="csvDialog.confirm('teacher')" autofocus>导入</button><button ng-click="$close()">取消</button></div>
+                    </dialog>
+
+                    <popup ng-if="csvPopup.open['teacher']" close="csvPopup.open['teacher']=false;csvDialog.clear();freshData(user,changeToTeacherList);" close-action="esc outerchick">
+                      <div class="mod-popup-example">
+                        成功导入{%templatetag openvariable%}csvDialog.successNum{%templatetag closevariable%}人<br>
+                        失败{%templatetag openvariable%}csvDialog.failList.count(){%templatetag closevariable%}人<br>
+                        <table ng-if="csvDialog.failList.count()>0">
+                            <thead>导入失败:</thead>
+                            <th>账号</th><th>姓名</th><th>原因</th>
+                            <tr ng-repeat="fail in csvDialog.failList">
+                            <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                            </tr>
+                          </table>
+                      </div>
+                    </popup>
+                    <button class="btn btn-success btn-sm" ng-if="user.loaded" ng-click="exportExcel('teacher-grid')">导出Excel</button>
+                    <button class="btn btn-info btn-sm" ng-if="user.loaded" ng-click="freshData(user,changeToTeacherList)">刷新</button>
+                  </div>
+                </div>
+                <div class="content">
+                  <div id="teacher-grid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid" ng-show="page1=='student-list'">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row block">
+                <div class="title">
+                  <span>学生列表</span>
+                  <div class="btn-group" style="float:right">
+
+                    <button id="csvBtn" class="btn btn-warning btn-sm" ngf-select="parse_csv($file,'student')"  ngf-pattern="'.csv'" ng-show="user.loaded">导入csv</button>
+                    <dialog ng-if="csvDialog.open['student']" for="csvBtn" close="csvDialog.open['student']=false" close-action="esc outerchick">
+                        <div dialog-title>导入学生信息</div>
+                        <div dialog-content>
+                          待导入学生数量:<span>{%templatetag openvariable%}csvDialog.count{%templatetag closevariable%}</span><br>
+                          <table ng-if="csvDialog.count>0">
+                            <thead>样例:</thead>
+                            <th>学号</th><th>姓名</th>
+                            <tr>
+                            <td>{%templatetag openvariable%}csvDialog.sample[0]{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}csvDialog.sample[1]{%templatetag closevariable%}</td>
+                            </tr>
+                          </table>
+                        </div>
+                      <div dialog-buttons><button ng-click="csvDialog.confirm('student')" autofocus>导入</button><button ng-click="$close()">取消</button></div>
+                    </dialog>
+
+                    <popup ng-if="csvPopup.open['student']" close="csvPopup.open['student']=false;csvDialog.clear();freshData(user,changeToStudentList);" close-action="esc outerchick">
+                      <div class="mod-popup-example">
+                        成功导入{%templatetag openvariable%}csvDialog.successNum{%templatetag closevariable%}人<br>
+                        失败{%templatetag openvariable%}csvDialog.failList.count(){%templatetag closevariable%}人
+                        <table ng-if="csvDialog.failList.count()>0">
+                            <thead>导入失败:</thead>
+                            <th>学号</th><th>姓名</th><th>原因</th>
+                            <tr ng-repeat="fail in csvDialog.failList">
+                            <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                            </tr>
+                          </table>
+                      </div>
+                    </popup>
+                    <button class="btn btn-success btn-sm" ng-if="user.loaded" ng-click="exportExcel('student-grid')">导出Excel</button>
+                    <button class="btn btn-info btn-sm" ng-if="user.loaded" ng-click="freshData(user,changeToStudentList)">刷新</button>
+                  </div>
+                </div>
+                <div class="content">
+                  <div id="student-grid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid" ng-show="page1=='experiment-list'">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row block">
+                <div class="title">
+                  <span>实验列表</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-success btn-sm" ng-if="experiment.loaded" ng-click="exportExcel2('experiment-grid')">导出Excel</button>
+                    <button class="btn btn-info btn-sm" ng-if="experiment.loaded" ng-click="freshData(experiment,changeToExperimentList)">刷新</button>
+                  </div>
+
+
+                </div>
+                <div class="content">
+                  <table id="experiment-grid"></table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-fluid" ng-show="page1=='teacher'">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row block" style="padding-bottom:0px;">
+                <form ng-submit="search_teacher()">
+                  <div class="form-group">
+                    <input name="uid" type="text" class="form-control" id="uid" placeholder="请输入账号" ng-model="search_teacher_uid"/>
+                  </div>
+                </form>
+              </div>
+              <div class="row" ng-show="search_teacher_success">
+                <div class="col-md-9">
+                  <div class="row block">
+                    <div class="title">
+                      <span>实验授课</span>
+                      <div class="btn-group" style="float:right">
+                        <button class="btn btn-success btn-sm" ng-click="exportExcel('teacher-experiment-grid')">导出Excel</button>
+                        <button class="btn btn-info btn-sm" ng-click="search_teacher()">刷新</button>
+                      </div>
+                    </div>
+                    <div class="content">
+                      <div id="teacher-experiment-grid"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="row block">
+                    <div class="title">基本信息
+                    <button class="btn btn-danger btn-xs" style="float:right" ng-click="resetPassword(search_result.username)">重置密码</button>
+                    </div>
+                    <div class="head-img-div">
+                      <img id="teacher-head-img" src="/static/images/head-img-default.jpg" class="img-circle"/>
+                    </div>
+                    <table align="left" style="width:100%">
+                      <tbody>
+                      <tr>
+                        <td style="width:35%;"><span class="span-title">姓名:</span></td>
+                        <td  style="width:65%;"><span ng-bind-html="search_result.name"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">账号:</span></td>
+                        <td><span ng-bind-html="search_result.username"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">邮箱:</span></td>
+                        <td><span ng-bind-html="search_result.email"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">电话:</span></td>
+                        <td><span ng-bind-html="search_result.phone"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">办公室:</span></td>
+                        <td><span ng-bind-html="search_result.address"></span></td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-fluid" ng-show="page1=='student'">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row block" style="padding-bottom:0px;">
+                <form ng-submit="search_student()">
+                  <div class="form-group">
+                    <input name="uid" type="text" class="form-control" placeholder="请输入账号" ng-model="search_student_uid"/>
+                  </div>
+                </form>
+              </div>
+              <div class="row" ng-show="search_student_success">
+                <div class="col-md-9">
+                  <div class="row block">
+                    <div class="title">
+                      <span>参与实验</span>
+                      <div class="btn-group" style="float:right">
+                        <button class="btn btn-info btn-sm" ng-click="search_student()">刷新</button>
+                      </div>
+                    </div>
+                    <div class="content">
+                      <div id="student-experiment-grid"></div>
+                    </div>
+                  </div>
+                  <div class="row block">
+                    <div class="title">
+                      <span>实验报告</span>
+                      <div class="btn-group" style="float:right">
+                        <button class="btn btn-info btn-sm" ng-click="search_student()">刷新</button>
+                      </div>
+                    </div>
+                    <div class="content">
+                      <div id="student-report-grid"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="row block">
+                    <div class="title">基本信息
+                    <button class="btn btn-danger btn-xs" style="float:right" ng-click="resetPassword(search_result.username)">重置密码</button>
+                    </div>
+                    <div class="head-img-div">
+                      <img id="student-head-img" src="/static/images/head-img-default.jpg" class="img-circle"/>
+                    </div>
+                    <table align="left" style="width:100%">
+                      <tbody>
+                      <tr>
+                        <td style="width:35%;"><span class="span-title">姓名:</span></td>
+                        <td  style="width:65%;"><span ng-bind-html="search_result.name"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">账号:</span></td>
+                        <td><span ng-bind-html="search_result.username"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">邮箱:</span></td>
+                        <td><span ng-bind-html="search_result.email"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">电话:</span></td>
+                        <td><span ng-bind-html="search_result.phone"></span></td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-fluid" ng-show="page1=='experiment'">
+          <div class="row block" style="padding-bottom:0px;">
+            <form ng-submit="changeToExperiment()">
+              <div class="form-group">
+                <input name="eid" type="text" class="form-control" placeholder="请输入账号" ng-model="search_experiment_eid"/>
+              </div>
+            </form>
+          </div>
+          <div class="row" ng-show="selected_experiment.loaded">
+            <div class="col-md-9">
+              <div class="row block">
+                <div class="title">
+                  <span>学生列表</span>
+                  <div class="btn-group" style="float:right">
+                    <button id="experiment-csv" class='btn btn-warning btn-sm' ngf-select='parse_csv_experiment($file,selected_experiment.eid)' ngf-pattern="'.csv'">导入csv</button>
+                    <button class="btn btn-success btn-sm" ng-if="selected_experiment.loaded" ng-click="exportExcel('report-grid')">导出Excel</button>
+                    <button class="btn btn-info btn-sm" ng-if="selected_experiment.loaded" ng-click="changeToExperiment(selected_experiment.eid)">刷新</button>
+                  </div>
+                </div>
+                <dialog ng-if="ExperimentCsvDialog.open" for="experiment-csv" close="ExperimentCsvDialog.open=false" close-action="esc outerchick">
+                        <div dialog-title>导入教师信息</div>
+                        <div dialog-content>
+                          待导入学生数量:<span>{%templatetag openvariable%}ExperimentCsvDialog.count{%templatetag closevariable%}</span><br>
+                          <table ng-if="ExperimentCsvDialog.count>0">
+                            <thead>样例:</thead>
+                            <th>账号</th><th>姓名</th>
+                            <tr>
+                            <td>{%templatetag openvariable%}ExperimentCsvDialog.sample[0]{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}ExperimentCsvDialog.sample[1]{%templatetag closevariable%}</td>
+                            </tr>
+                          </table>
+                        </div>
+                      <div dialog-buttons><button ng-click="ExperimentCsvDialog.confirm(ExperimentCsvDialog.cur_eid)" autofocus>导入</button><button ng-click="$close()">取消</button></div>
+                    </dialog>
+
+                    <popup ng-if="ExperimentCsvPopup.open" close="ExperimentCsvPopup.open=false;ExperimentCsvDialog.clear();" close-action="esc outerchick">
+                      <div class="mod-popup-example">
+                        成功导入{%templatetag openvariable%}ExperimentCsvDialog.successNum{%templatetag closevariable%}人<br>
+                        失败{%templatetag openvariable%}ExperimentCsvDialog.failList.count(){%templatetag closevariable%}人<br>
+                        <table ng-if="ExperimentCsvDialog.failList.count()>0">
+                            <thead>导入失败:</thead>
+                            <th>账号</th><th>姓名</th><th>原因</th>
+                            <tr ng-repeat="fail in ExperimentCsvDialog.failList">
+                            <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                            </tr>
+                          </table>
+                      </div>
+                    </popup>
+                <div id="report-grid"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+
+              <div class="row block">
+                <div class="title">实验报告完成情况</div>
+                <div id="report_state_chart"></div>
+              </div>
+
+              <div class="row block">
+                <div class="title">实验信息</div>
+                <table>
+                  <tbody>
+                  <tr>
+                    <td><span class="span-title">实验</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_experiment.content.base.name"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span-title">时间</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_experiment.content.week"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span span-title">日期</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_experiment.content.date"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span span-title">截止</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_experiment.content.end_date"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span-title">地点</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_experiment.content.classroom"></span></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid" ng-show="page1=='website'">
+          <div class="row block">
+            <div class="setting-content">
+              <form role="form" name="basicSettingForm" novalidate="novalidate" id="basic-setting-form" ng-submit="saveSettings(0)">
+                <legend>
+                  基本设置
+                  <button id="save-btn" type="submit" class="btn btn-primary" style="float:right">
+                    保存
+                  </button>
+                </legend>
+                <div class="form-group">
+                  <label for="sitename">网站域名</label>
+                  <input name="sitename" type="text" class="form-control" id="sitename" ng-model="website_setting.content.sitename"/>
+                </div>
+                <div class="form-group">
+                  <label>学期开始日期</label>
+                  <div class="form-control" id="start_week_day"></div>
+                </div>
+                <div class="form-group">
+                  <label>报告截止期限</label>
+                  <ig-numeric-editor id="report_editing_day" class="form-control" ng-model="website_setting.content.report_editing_day" button-type="spin" spinDelta="1" dataMode="int" minValue="0"></ig-numeric-editor>
+                </div>
+                <div class="form-group">
+                  <label for="default_password">默认密码</label>
+                  <input name="default_password" type="text" class="form-control" id="default_password" ng-model="website_setting.content.default_password"/>
+                </div>
+                <div class="form-group">
+                  <label for="default_password">网站登陆欢迎语</label>
+                  <input name="default_password" type="text" class="form-control" id="welcome_word" ng-model="website_setting.content.welcome_word"/>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="row block">
+            <div class="setting-content">
+              <form role="form" name="tagSettingForm" novalidate="novalidate" id="tag-setting-form" ng-submit="saveSettings(1)">
+                <legend>
+                  预设标签
+                  <button type="submit" class="btn btn-primary" style="float:right" ng-click="render_website_setting()">
+                    刷新
+                  </button>
+                </legend>
+                <div class="form-group">
+                  <label>预设扣分项</label>
+                  <!--<input id="report-tags" class="tagsinput tagsinput-typeahead input-lg"/>-->
+                  <tags-input ng-model="website_setting.content.report_tags"
+                              display-property="reason"
+                              min-length="1"
+                              on-tag-adding="report_tag_add($tag)"
+                              on-tag-removed="report_tag_removed($tag)"
+                              placeholder="预设扣分原因"
+                              class="bootstrap"
+                  >
+                  </tags-input>
+               </div>
+                <div class="form-group">
+                  <label>学院</label>
+                  <tags-input ng-model="website_setting.content.institute"
+                              display-property="name"
+                              min-length="1"
+                              on-tag-adding="institute_add($tag)"
+                              on-tag-removed="institute_removed($tag)"
+                              placeholder="添加学院"
+                              class="bootstrap"
+                  >
+                  </tags-input>
+                </div>
+                <div class="form-group">
+                  <label>专业</label>
+                  <span style="float:right">
+                    <div id="institute-combo"></div>
+                  </span>
+                  <tags-input ng-model="selected_institute.major"
+                              display-property="name"
+                              min-length="1"
+                              on-tag-adding="major_add($tag)"
+                              on-tag-removed="major_removed($tag)"
+                              placeholder="添加专业"
+                              class="bootstrap"
+                  >
+                  </tags-input>
+                </div>
+                <div class="form-group">
+                  <label>班级</label>
+                  <span style="float:right">
+                    <div id="major-combo"></div>
+                  </span>
+                  <tags-input ng-model="selected_major.student_class"
+                              display-property="name"
+                              min-length="1"
+                              on-tag-adding="class_add($tag)"
+                              on-tag-removed="class_removed($tag)"
+                              placeholder="添加班级"
+                              class="bootstrap"
+                  >
+                  </tags-input>
+               </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

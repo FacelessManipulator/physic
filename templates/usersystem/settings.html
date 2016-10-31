@@ -1,0 +1,139 @@
+{% extends "base.html"%}
+{% block css %}
+<link href="/static/css/setting.css" rel="stylesheet"/>
+{% endblock%}
+{% block script %}
+<script src="/static/angularjs/1.5/ng-file-upload-shim.min.js"></script>
+<script src="/static/angularjs/1.5/ng-file-upload.min.js"></script>
+<script>
+    var institutes = [{% for institute in institutes %}{'name':'{{institute.name}}','iid':{{institute.iid}},
+                      'major':[{% for major in institute.major %}{'name':'{{major.name}}', 'mid':{{major.mid}},
+                      'student_class': [{% for student_class in major.student_class %}{'name':'{{student_class.name}}',
+                      'cid':{{student_class.cid}}}, {% endfor %} ]},{% endfor %}]},{% endfor %}];
+    {% if User.student_class %}
+    var m_institute = {{User.student_class.major.institute.iid}};
+    var m_major = {{User.student_class.major.mid}};
+    var m_class = {{User.student_class.cid}};
+    {% endif %}
+</script>
+<script src="/static/js/setting.js"></script>
+
+{% endblock %}
+{% block content %}
+<div ng-app="physiclab.settingApp" class="setting-page container-fluid">
+    <div class="row">
+        {% include "navbar.html" %}
+    </div>
+    <div class="row" ng-controller="settingCtrl">
+        <div class="col-md-offset-1 col-md-3">
+            <div class="head-img">
+                <img ngf-thumbnail="headImg || '{% if User.photo %}{{User.photo.url}}{% else %}{{'/static/images/head-img-default.jpg'}}{% endif %}'" width="100%" ngf-size="{width: 500, height: 500, quality: 0.9}" >
+                <form name="headImgForm">
+                    <button class="btn btn-primary" style="width:49%" ngf-select ng-model="headImg" name="headImg" ngf-pattern="'image/*'"
+                            ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100"
+                            ngf-resize="{width: 100, height: 100, quality: .8, type: 'image/jpeg',ratio: '1:1', centerCrop: true, restoreExif: false}">更换头像</button>
+                    <button class="btn btn-info" id="head-img-submit" style="width:49%" type="submit" ng-disabled="!headImg" ng-click="submit()">上传</button>
+                </form>
+            </div>
+            <div class="btn-group panels">
+                <div class="btn panel ng-class:{true:'btn-warning', false:'btn-inverse'}[setting=='basic']" ng-click="setting='basic'">
+                    基本设置
+                </div>
+                <div class="btn panel ng-class:{true:'btn-warning', false:'btn-inverse'}[setting=='advance']" ng-click="setting='advance'">
+                    高级设置
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7 setting">
+            <div class="" ng-show="setting=='basic'">
+                <div class="setting-content">
+                    <form role="form" name="basicSettingForm" novalidate="novalidate" id="basic-setting-form" ng-submit="saveSettings()">
+                        <legend>
+                            基本设置
+                            <button id="save-btn" type="submit" class="btn btn-primary" style="float:right">
+                                保存
+                            </button>
+                        </legend>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="uid">账号</label>
+                            <input name="uid" type="text" class="form-control" id="uid" placeholder="账号" disabled value="{{User.user.username}}"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name">姓名</label>
+                            <input name="name" type="text" class="form-control" id="name" placeholder="姓名" {% if not User.user.is_super %}disabled{% endif %} value="{{User.name}}"/>
+                        </div>
+
+                        <div class="form-group ng-class:{true:'has-error',false:''}[basicSettingForm.phone.$error.pattern]">
+                            <label for="phone">手机号</label>
+                            <input name="phone" type="text" ng-pattern="'^\\d*$'" ng-model="phone" class="form-control" id="phone" placeholder="手机号" value="{{User.phone|default_if_none:''}}"/>
+                            <div class="white-block">
+                                <span class="error" ng-show="basicSettingForm.phone.$error.pattern">请填写数字</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">学院</label>
+                            <div id="institute-combo"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">专业</label>
+                            <div id="major-combo"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">班级</label>
+                            <div id="class-combo"></div>
+                            <input name="cid" ng-model="selected_class.cid" hidden>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            <div class="" ng-show="setting=='advance'">
+                <div class="setting-content">
+                    <form role="form" name="advanceSettingForm" novalidate="novalidate" id="advance-setting-form" ng-submit="setting()">
+                        <legend>
+                            高级设置
+                            <!--<button type="submit" class="btn btn-primary" style="float:right">-->
+                            <!--保存-->
+                            <!--</button>-->
+                        </legend>
+                        {% csrf_token %}
+                        <div class="form-group ng-class:{true:'has-error',false:''}[advanceSettingForm.email.$error.email]">
+                            <label for="email">邮箱</label>
+                            <div class="input-group ng-class:{true:'focus',false:''}[!advanceSettingForm.email.$error.email]">
+                                <input name="email" type="email" class="form-control" id="email" placeholder="邮箱" ng-model="m_email" ng-value="'{{User.user.email|default_if_none:''}}'"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" ng-disabled="advanceSettingForm.email.$error.email" ng-click="changeEmail()">
+                                        验证
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="white-block">
+                                <span class="error" ng-show="advanceSettingForm.email.$error.email">不支持的邮箱格式!</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">更改密码</label>
+                            <div class="input-group ng-class:{true:'has-error',false:''}[advanceSettingForm.newPassword.$error.minlength||advanceSettingForm.repeatPassword.$error.repeat]">
+                                <input name="newPassword" type="password" class="form-control" id="newPassword" ng-minlength="8" placeholder="新密码" ng-model="newPassword"/>
+                                <input style="margin-top:20px;"  name="repeatPassword" type="password" class="form-control" id="repeatPassword" placeholder="确认密码" ng-model="repeatPassword" pw-check="newPassword"/>
+                            </div>
+                            <div class="white-block">
+                                <span class="error" ng-show="advanceSettingForm.repeatPassword.$error.repeat">确认密码与密码不一致!</span>
+                                <span class="error" ng-show="advanceSettingForm.newPassword.$error.minlength">请输入不短于8位的密码!</span>
+                            </div>
+                            <button id="btn-pawd" class="btn btn-info" ng-disabled="advanceSettingForm.repeatPassword.$error.repeat||advanceSettingForm.newPassword.$error.minlength" ng-click="changePassword()">更改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        <div data-ng-init="render()" ></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

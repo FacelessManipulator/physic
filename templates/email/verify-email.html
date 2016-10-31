@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>大工物光在线实验平台邮箱绑定验证</title>
+</head>
+<body>
+<p>亲爱的{{nickname}}:</p>
+<p>您好!这是一封来自大连理工大学物理与光电学院在线实验平台的邮箱验证邮件，您的账号{{account}}于{% now "SHORT_DATETIME_FORMAT" %}申请邮箱验证。如果这不是您本人的操作，请您忽略。对您带来的不便我们深感歉意。
+    请点击以下链接完成验证:</p>
+<p><a href="{{verify_url}}">{{verify_url}}</a></p>
+<p>如果链接不能点击，请复制以上地址到浏览器，然后直接打开。</p>
+<p>上述链接1小时内有效。如果激活链接失效，请您前往您的个人信息页面重新申请验证。</p>
+<div style="float:right;">
+    <p>大工物理与光电学院在线实验平台管理组 </p>
+    <p>{% now "SHORT_DATETIME_FORMAT" %}</p>
+</div>
+</body>
+</html>

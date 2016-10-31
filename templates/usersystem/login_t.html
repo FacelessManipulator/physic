@@ -1,0 +1,87 @@
+{% extends "base.html"%}
+{% block css %}
+<link href="/static/css/login.css" rel="stylesheet"/>
+{% endblock%}
+{% block script %}
+<script src="/static/js/login.js"></script>
+{% endblock %}
+{% block content %}
+<div ng-app="physiclab.loginApp" class="login-page container">
+  <div class="row" >
+    {% include "navbar.html"%}
+  </div>
+  <div class="row" style="margin-top:100px;" ng-switch on="page" ng-controller="loginCtrl">
+
+  <div ng-switch-when="login" class="slide">
+    <div class="col-md-5 col-md-offset-1">
+      <h1 class="index-title">PhysicLab</h1>
+      <p class="index-p">{{Config.welcome_word}}</p>
+    </div>
+    <div class="col-md-offset-1 col-md-4">
+      <div class="login-box">
+        <form name="loginForm" novalidate="novalidate" id="login-form" ng-submit="login()">
+          {% csrf_token %}
+          <label>用户名</label>
+          <input class="login-input" type="text" name="username" ng-model="username" required />
+          <div class="white-block">
+            <span class="error" ng-show="loginForm.username.$error.required">请输入用户名!</span>
+          </div>
+          <label>密码</label>
+          <label style="float: right;"><a href="javascript:void(0);" ng-click="resetPassword()">忘记密码?</a></label>
+          <input id="password" class="login-input" type="password" name="password" ng-model="password" required />
+          <div class="white-block">
+            <span class="error" ng-show="loginForm.password.$error.required">请输入密码!</span>
+          </div>
+          <label>验证码</label>
+          <input class="login-input-small" type="text" name="capture" ng-model="capture" required />
+                <span style="display:block;float:right;font-size:30px;">
+                  <a ng-click="refreshCapture()" title="看不清？"><img id="captureImg" /><input id="captureKey" name="captureKey" type="hidden"/></a>
+                </span>
+          <div class="white-block"><span class="error" ng-show="loginForm.capture.$error.required">请输入验证码!</span></div>
+
+          <div class="login-status" id="login-status"></div>
+          <button type="submit" id="loginBtn" class="btn btn-primary" ng-disabled="loginForm.$invalid" style="width: 100%;margin-top: 8px;">登录</button>
+
+        </form>
+      </div>
+    </div>
+  </div>
+    <div ng-switch-when="first-login" id="first-login-div" class="slide">
+      <div class="col-md-5 col-md-offset-1">
+        <h1 class="index-title">首次登录</h1>
+        <p class="index-p">1.请重置您的密码，并绑定邮箱。</p>
+        <p class="index-p">2.前往您的邮箱查看验证邮件</p>
+        <p class="index-p">3.若您在两分钟内尚未收到邮件，请重新绑定</p>
+        <p class="index-p">4.若账号激活失败，请联系管理员</p>
+      </div>
+      <div class="col-md-offset-1 col-md-4">
+        <div class="login-box" >
+          <form name="firstLoginForm" novalidate="novalidate" id="first-login-form" ng-submit="firstLogin()">
+            {% csrf_token %}
+            <label>新密码</label>
+            <input class="login-input" id="newPassword" type="password" name="newPassword" ng-model="newPassword" placeholder="请输入密码" required />
+            <div class="white-block">
+              <span class="error" ng-show="firstLoginForm.newPassword.$error.required">请输入新密码!</span>
+            </div>
+            <label>重复密码</label>
+            <input id="repeatPassword" class="login-input" type="password" name="repeatPassword" ng-model="repeat" placeholder="请再次输入密码" pw-check="newPassword" required />
+            <div class="white-block">
+              <span class="error" ng-show="firstLoginForm.repeatPassword.$error.required">请再次输入密码!</span>
+              <span class="error" ng-show="!firstLoginForm.repeatPassword.$error.required && firstLoginForm.repeatPassword.$error.repeat">确认密码与密码不一致!</span>
+            </div>
+            <label>邮箱</label>
+            <input class="login-input" type="email" name="email" ng-model="email" placeholder="请输入邮箱" required />
+            <div class="white-block">
+              <span class="error" ng-show="firstLoginForm.email.$error.required">请输入邮箱!</span>
+              <span class="error" ng-show="firstLoginForm.email.$error.email">不支持的邮箱格式!</span>
+            </div>
+            <div class="login-status" id="first-login-status"></div>
+            <button type="submit" id="firstLoginBtn" class="btn btn-primary" ng-disabled="firstLoginForm.$invalid" style="width: 100%;margin-top: 8px;">提交</button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock%}

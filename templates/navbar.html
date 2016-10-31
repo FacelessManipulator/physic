@@ -1,0 +1,42 @@
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-01">
+            <span class="sr-only">Toggle navigation</span>
+        </button>
+        <a class="navbar-brand" href="/">PhysicLab</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbar-collapse-01">
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="/">我的实验</a></li>
+            <li><a href="/">我的报告</a></li>
+            <li><a href="/">我的成绩</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+                {% if User %}
+                    <li class="dropdown">
+                        <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" style="font-size:14px;font-weight:100;">
+                            {{User.name}} <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/setting">个人设置</a></li>
+                            <li><a href="mailto:cippus-sss@outlook.com">意见反馈</a></li>
+                            <li class="divider"></li>
+                            <li><a href="/logout">退出</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class=""><a href="/setting"><span class="fui-user"></span></a></li>
+                {% endif %}
+        </ul>
+        <form class="navbar-form navbar-right" action="/login" role="search" method="get">
+            <div class="form-group">
+              <div class="input-group">
+                <input class="form-control" id="navbarInput-01" type="search" placeholder="Search">
+                <span class="input-group-btn">
+                  <button class="btn"><span class="fui-search" onclick="alert('功能开发中');"></span></button>
+                </span>
+              </div>
+            </div>
+        </form>
+    </div>
+</nav>

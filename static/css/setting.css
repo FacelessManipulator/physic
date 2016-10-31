@@ -1,0 +1,26 @@
+.setting{
+    border-left: #CCCCCC 2px solid;
+}
+.panels{
+    margin-top: 50px;
+    width: 100%;
+}
+.panel{
+    width: 100%;
+}
+.white-block{
+    font-size: 2px;
+    width:100%;
+    height:20px;
+}
+.error{
+    color:#e74c3c;
+}
+.btn-gray{
+    color: #fff;
+    background-color: #bdc3c7;
+}
+.btn-blue{
+    color: #fff;
+    background-color: #3498db;
+}

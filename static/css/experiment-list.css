@@ -1,0 +1,229 @@
+body{
+    background-color: #eee;
+}
+.back-to-top{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #000;
+    color: #fff;
+    display: block;
+    border-radius: 50%;
+    font-size: 17px;
+    z-index: 5;
+    display: none;
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    text-align: center;
+}
+.circle-button{
+    margin: 2px;
+    border:0px;
+    padding:0px;
+    background: #1abc9c;
+    color: #fff;
+    display: block;
+    border-radius: 50%;
+    font-size: 30px;
+    z-index: 5;
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    text-align: center;
+}
+.prev-next-span{
+    float: right;
+    line-height: 45px;
+    font-size: 16px;
+    margin: 0 20px;
+}
+.div-inverse{
+    border-top: #5A7086 2px solid;
+    background: #34495e;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 23px;
+}
+.head-img-div{
+    text-align: center;
+    padding: 20px 0;
+}
+.head-img-div>img{
+    width: 50%;
+}
+.head-img-div>span{
+    display: block;
+    margin-top: 10px;
+}
+.btn-full{
+    width: 100%;
+    border-top: #5A7086 2px solid;
+    border-radius: 0px;
+}
+.coming{
+    text-align: left;
+}
+.coming>h3{
+    font-size: 25px;
+    text-align: center;
+    margin: 10px;
+}
+.coming>span{
+    display: block;
+    font-weight: 100;
+    font-size: 14px;
+    margin-top: 10px;
+}
+.address{
+    height: 40px;
+    font-weight: 100;
+    font-size: 14px;
+    padding-left: 18px;
+    line-height: 40px;
+    border-bottom: #5A7086 2px solid;
+    width: 100%;
+}
+.address>a{
+    color: #fff;
+}
+.address>a:hover{
+    color: #16a085;
+}
+.viewer{
+    background: #EEE;
+    padding: 0;
+    margin: 0px -15px;
+    height: 100%;
+}
+.block{
+    padding: 20px;
+    background: #fff;
+    color: #333;
+    font-size: 14px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 10px 0;
+    overflow:hidden;
+    position:relative;
+}
+.span-title{
+    color: #666;
+    display: block;
+    margin: 0px 10px 20px 0px;
+    min-width: 33px;
+}
+.span-content{
+    color: #666;
+    display: block;
+    min-height:44px;
+}
+.title{
+    font-size: 20px;
+    width: 100%;
+    border-bottom: #eee solid 1px;
+    margin: 0px 0px 10px 0px;
+}
+.ui-sigma{
+    background-image: url('/static/jmeditor/ckeditor/plugins/jme/icons/jme.png')!important;
+    background-position: 0 0px;
+}
+.block>p{
+    font-size: 14px;
+    margin-left: 12px;
+}
+.block>.content{
+    font-size: 14px;
+    margin-left: 12px;
+}
+.block>.content{
+    position:relative;
+}
+.drag-wrap {
+        position: relative;
+    }
+.drag-wrap:after {
+    position: relative;
+}
+.drag {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    cursor:move;
+    text-align: left;
+    line-height: 40px;
+    color: #FFF;
+}
+.drag:after {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        line-height: 1em;
+        text-align: left;
+        color: #888;
+        font-size: 12px;
+}
+.tooltip-arrow{
+    border-right-color:#16a085!important;
+}.tooltip-inner{
+    background-color:#16a085;
+}
+.drop-box{
+    cursor: pointer;
+    height: 200px;
+    width: 100%;
+    border: 3px dashed #bbb;
+    border-color: gray;
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+    border-radius: 1px;
+    text-align: center;
+    color: gray;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+    background-color: white;
+    vertical-align: middle;
+    font-size: 30px;
+    box-sizing: border-box;
+    padding-top: 70px;
+}
+table{
+    width: 100%;
+    margin-bottom: 20px;
+}
+tr:hover{
+    background-color: #eee;
+}
+.span{
+    word-break: normal;
+    width: auto;
+    display: block;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+.ui-igcombo-field{
+    font-size: 15px!important;
+}
+.ui-igcombo-dropdown{
+    font-size: 15px!important;
+}
+.mod-popup-example {
+        padding: 10px;
+        border: 1px solid rgba(0, 0, 0, 9);
+        border-radius: 5px;
+        background: rgba(0, 0, 0, .7);
+        color: #FFF;
+    }
+.block>.abc{
+    position:absolute;
+    right: -80px;
+    height: 100%;
+    margin-top: -20px;
+    transition: all 0.5s;
+}
+.block:hover>.abc{
+    float:right;
+    right: 0px;
+}

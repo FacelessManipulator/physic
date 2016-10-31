@@ -1,0 +1,10 @@
+<div class="login-box">
+    <form name="login-form" novalidate="novalidate">
+        <label>Username</label>
+        <input class="login-input" type="text" name="account" ng-model="loginAccount" required />
+        <label>Password</label>
+        <label style="float: right;"><a href="javascript:void(0);">Forgot password?</a></label>
+        <input class="login-input" type="password" name="password" ng-model="password" required />
+        <button class="btn btn-primary" ng-click="getForm()" style="width: 100%;margin-top: 8px;">login</button>
+    </form>
+</div>

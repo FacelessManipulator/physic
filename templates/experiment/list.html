@@ -1,0 +1,410 @@
+{% extends "base.html"%}
+{% block css %}
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<link rel="stylesheet" href="/static/bower_components/fullcalendar/dist/fullcalendar.css"/>
+<link href="/static/css/experiment-list.css" rel="stylesheet"/>
+<link href="/static/jmeditor/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
+{% endblock%}
+{% block script %}
+<script src="/static/angularjs/1.5/angular-sanitize.min.js"></script>
+<script src="/static/angularjs/1.5/ng-file-upload-shim.min.js"></script>
+<script src="/static/angularjs/1.5/ng-file-upload.min.js"></script>
+<script src="/static/js/angular-popups.js"></script>
+<script src="/static/jmeditor/mathquill-0.9.1/mathquill.min.js" ></script>
+<script src="/static/jmeditor/JMEditor.js"></script>
+<script type="text/javascript" src="/static/bower_components/moment/min/moment.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/angular-ui-calendar/src/calendar.js"></script>
+<script type="text/javascript" src="/static/bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/fullcalendar/dist/gcal.js"></script>
+<script src="/static/js/experiment-list.js"></script>
+<script>
+    var changeToReport = function(rid){
+        var $scope = angular.element($("#experimentApp")).scope();
+        $scope.changeReport(rid);
+    }
+</script>
+{% endblock %}
+{% block content %}
+<a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
+<div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl">
+  <div class="row">
+    <div class="col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
+      <div class="row" style="height:40px;">
+        <button class="btn btn-default" style="width:100%;text-align:right;border-radius:0px">
+          <i class="icon-reorder"></i>
+        </button>
+      </div>
+      <div class="row head-img-div div-inverse">
+        <img src="{% if User.photo %}{{User.photo.url}}{% else %}{{ '/static/images/head-img-default.jpg' }}{% endif%}" class="img-circle"/>
+        <span>{{User.name}}</span>
+      </div>
+      <div class="row btn-group">
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'all']" ng-click="changeAll()">全部实验</button>
+        <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'grades']" ng-click="changeGrades()">查看成绩</button>
+        <button ng-if="!selected_report.loaded" class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report']">当前实验</button>
+        <div ng-if="selected_report.loaded" class="btn btn-full coming ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report']" ng-click="changeReport(selected_report.rid)">
+          <h3>当前实验</h3>
+          <span class="span " ng-bind-html="'实验:'+selected_report.experiment_name"></span>
+          <span class="span " ng-bind-html="'时间:'+selected_report.experiment.week"></span>
+          <span class="span " ng-bind-html="'地点:'+selected_report.experiment.classroom"></span>
+        </div>
+        <!--<div ng-if="selected_report.loaded" class="btn btn-full btn-inverse coming" ng-click="changeReport(selected_report.rid)">-->
+        <!--<h3>下次实验</h3>-->
+        <!--<span class="span "ng-bind-html="'实验:'+selected_report.experiment_name"></span>-->
+        <!--<span class="span "ng-bind-html="'时间:'+selected_report.experiment.week + '/'+selected_report.experiment.time"></span>-->
+        <!--<span class="span "ng-bind-html="'地点:'+selected_report.experiment.classroom"></span>-->
+        <!--</div>-->
+      </div>
+    </div>
+    <div class="col-md-offset-2 col-md-10">
+      <div class="row address div-inverse" style="position:fixed;z-index:999;">
+        <a href="javascript:;" id="ajax-state"></a>
+        <div class="btn-group" style="position:fixed;right:2px;">
+          <button data-toggle="dropdown" type="button" class="btn btn-inverse btn-sm dropdown-toggle">{{User.name}}<span class="caret"></span></button>
+          <ul role="menu" class="dropdown-menu dropdown-menu-inverse">
+            <li><a href="/setting">个人设置</a></li>
+            <li><a href="/feedback">意见反馈</a></li>
+            <li class="divider"></li>
+            <li><a href="/logout">退出</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="height:40px;" id="top"></div>
+      <div class="row viewer">
+        <div class="container-fluid"  ng-show="page1=='report'">
+          <div class="row block">
+            <a href="javascript:;" ng-click="changeReport(selected_report.rid)"><span style="font-size:29px" ng-bind-html="selected_report.experiment_name"></span></a>
+            <span style="font-size: 17px;color: #888;margin-left: 30px;" ng-bind-html="selected_report.experiment.week"></span>
+            <div style="float:right">
+              <span style="display:block;" ng-if="!selected_report.is_submit"><i class="icon-circle" style="font-size:14px;color:#f1c40f;" ></i>可提交</span>
+              <span style="display:block;" ng-if="selected_report.closed&&!selected_report.is_submit"><i class="icon-circle" style="font-size:14px;color:#e74c3c;"></i>已超时</span>
+              <span style="display:block;" ng-if="selected_report.closed&&selected_report.is_submit&&selected_report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#3498db;"></i>已出分</span>
+              <span style="display:block;" ng-if="selected_report.is_submit&&!selected_report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#2ecc71;"></i>已提交</span>
+            </div>
+            <button id="submit-btn" ng-show="!selected_report.is_submit" class="btn btn-warning" ng-click="submitDialog = true" style="margin-right: 50px;float: right;">提交</button>
+            <dialog ng-show="submitDialog" for="submit-btn" close="submitDialog=false" close-action="esc outerchick">
+              <div dialog-title>确认提交?</div>
+              <div dialog-content>
+                提交前请确认已完成报告，提交后将无法修改。
+              </div>
+              <div dialog-buttons><button ng-click="submit()" autofocus>提交</button><button ng-click="$close()">取消</button></div>
+            </dialog>
+          </div>
+          <div class="row">
+            <div class="col-md-9">
+
+              <div class="row block">
+                <div class="title">
+                  <span>原始数据</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='raw_data'&&!selected_report.is_submit" ng-click="raw_data_editor_edit('raw_data')" >添加数据表格</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='raw_data'" ng-click="editor_cancel('raw_data')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='raw_data'" ng-click="editor_save('raw_data')">保存</button>
+                  </div>
+                </div>
+                <div class="content" id="raw_data_content" ng-show="editing_block !='raw_data'"></div>
+                <div id="raw_data_editor" ng-show="editing_block =='raw_data'"></div>
+
+              </div>
+              {% if Config.show_extra_block %}
+              <div class="row block">
+                <div class="title">
+                  <span>实验目的</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='objective'&&!selected_report.is_submit" ng-click="editor_edit('objective')" ng-disabled="editing_block!=''">编辑</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='objective'" ng-click="editor_cancel('objective')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='objective'" ng-click="editor_save('objective')">保存</button>
+                  </div>
+                </div>
+                <div class="content drag-wrap" id="objective_content" ng-show="editing_block !='objective'"></div>
+                <div id="objective_editor" ng-show="editing_block =='objective'"></div>
+                <div ngf-select="uploadImages('objective',$files)" ngf-drop="uploadImages('objective',$files)" ng-show="editing_block =='objective'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="objective-image-upload-status">拖拽图片至此添加</span>
+                </div>
+              </div>
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验原理</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='principle'&&!selected_report.is_submit" ng-click="editor_edit('principle')" ng-disabled="editing_block!=''">编辑</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='principle'" ng-click="editor_cancel('principle')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='principle'" ng-click="editor_save('principle')">保存</button>
+                  </div>
+                </div>
+                <div class="content drag-wrap" id="principle_content" ng-show="editing_block !='principle'"></div>
+                <div id="principle_editor" ng-show="editing_block =='principle'"></div>
+                <div ngf-select="uploadImages('principle',$files)" ngf-drop="uploadImages('principle',$files)" ng-show="editing_block =='principle'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="principle-image-upload-status">拖拽图片至此添加</span>
+                </div>
+              </div>
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验内容</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='process'&&!selected_report.is_submit" ng-click="editor_edit('process')" ng-disabled="editing_block!=''">编辑</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='process'" ng-click="editor_cancel('process')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='process'" ng-click="editor_save('process')">保存</button>
+                  </div>
+                </div>
+                <div class="content drag-wrap" id="process_content" ng-show="editing_block !='process'"></div>
+                <div id="process_editor" ng-show="editing_block =='process'"></div>
+                <div ngf-select="uploadImages('process',$files)" ngf-drop="uploadImages('process',$files)" ng-show="editing_block =='process'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="process-image-upload-status">拖拽图片至此添加</span>
+                </div>
+              </div>
+
+              {% endif %}
+
+              <div class="row block">
+                <div class="title">
+                  <span>数据处理</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='data_processing'&&!selected_report.is_submit" ng-click="editor_edit('data_processing')" ng-disabled="editing_block!=''">编辑</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='data_processing'" ng-click="editor_cancel('data_processing')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='data_processing'" ng-click="editor_save('data_processing')">保存</button>
+                  </div>
+                </div>
+                <div class="content drag-wrap" id="data_processing_content" ng-show="editing_block !='data_processing'"></div>
+                <div id="data_processing_editor" ng-show="editing_block =='data_processing'"></div>
+                <div ngf-select="uploadImages('data_processing',$files)" ngf-drop="uploadImages('data_processing',$files)" ng-show="editing_block =='data_processing'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="data_processing-image-upload-status">拖拽图片至此添加</span>
+                </div>
+              </div>
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验体会</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='instrument'&&!selected_report.is_submit" ng-click="editor_edit('instrument')" ng-disabled="editing_block!=''">编辑</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='instrument'" ng-click="editor_cancel('instrument')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='instrument'" ng-click="editor_save('instrument')">保存</button>
+                  </div>
+                </div>
+                <div class="content drag-wrap" id="instrument_content" ng-show="editing_block !='instrument'"></div>
+                <div id="instrument_editor" ng-show="editing_block =='instrument'"></div>
+                <div ngf-select="uploadImages('instrument',$files)" ngf-drop="uploadImages('instrument',$files)" ng-show="editing_block =='instrument'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="instrument-image-upload-status">拖拽图片至此添加</span>
+                </div>
+              </div>
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验思考</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm" ng-if="editing_block!='thinking'&&!selected_report.is_submit" ng-click="editor_edit('thinking')" ng-disabled="editing_block!=''">编辑</button>
+                    <button class="btn btn-danger btn-sm" ng-if="editing_block=='thinking'" ng-click="editor_cancel('thinking')">取消</button>
+                    <button class="btn btn-success btn-sm" ng-if="editing_block=='thinking'" ng-click="editor_save('thinking')">保存</button>
+                  </div>
+                </div>
+                <div class="content drag-wrap" id="thinking_content" ng-show="editing_block !='thinking'"></div>
+                <div id="thinking_editor" ng-show="editing_block =='thinking'"></div>
+                <div ngf-select="uploadImages('thinking',$files)" ngf-drop="uploadImages('thinking',$files)" ng-show="editing_block =='thinking'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="thinking-image-upload-status">拖拽图片至此添加</span>
+                </div>
+              </div>
+
+              <div id="math_editor_dialog">
+                <iframe id="math_frame" style="width:350px;height:320px;;" frameborder="no" src="/static/jmeditor/ckeditor/plugins/jme/dialogs/mathdialog.html"></iframe>
+                <button class="btn btn-success" ng-click="math_output()">导入公式</button>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="row block" ng-if="selected_report.content.back_reason!=''">
+                <div class="title">退回原因</div>
+                <div class="content">
+                  <span class="span span-content" ng-bind-html="selected_report.content.back_reason"></span>
+                </div>
+              </div>
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验分数</span>
+                </div>
+                <div class="content" ng-if="selected_report.content.closed&&selected_report.content.is_corrected&&selected_report.is_submit" style="font-size:90px;color:#e74c3c;text-align:center;cursor:pointer;">
+                  <span ng-bind-html="selected_report.content.total_grades"></span>
+                </div>
+                <div class="content" ng-if="!selected_report.content.closed"  style="font-size:30px;color:#e74c3c;height:75px;margin-top:50px;text-align:center">
+                  <span>实验未截止</span>
+                </div>
+                <div class="content" ng-if="selected_report.content.closed&&(!selected_report.content.is_corrected||selected_report.content.is_corrected&&!selected_report.is_submit)"  style="font-size:30px;color:#e74c3c;height:75px;margin-top:50px;text-align:center">
+                  <span>实验未出分</span>
+                </div>
+              </div>
+
+              <div class="row block">
+                <div class="title">实验信息</div>
+                <table>
+                  <tbody>
+                  <tr>
+                    <td><span class="span-title">实验</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_report.experiment.name"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span-title">时间</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_report.experiment.week"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span span-title">日期</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_report.experiment.date"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span span-title">截止</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_report.experiment.end_date"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span-title">地点</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_report.experiment.classroom"></span></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+
+
+
+              <div class="row block" ng-if="selected_report.content.closed&&selected_report.content.is_corrected">
+                <div class="title">扣分项</div>
+                <div class="content">
+                  <table align="left" style="width:100%">
+                    <tbody>
+                    <tr ng-repeat="tag in selected_report.content.tags">
+                      <td style="width:20%" ng-bind-html="tag.grade"></td>
+                      <td style="width:80%" ng-bind-html="tag.reason"></td>
+                    </tr>
+                    </tbody>
+                  </table>
+                  <!--<button class="btn btn-success btn-sm">申诉</button>-->
+                </div>
+              </div>
+
+
+              <div class="row block" ng-show="selected_report.content.teacher_name">
+                <div class="title">实验老师</div>
+                <div class="head-img-div">
+                  <img id="teacher-head-img" src="/static/images/head-img-default.jpg" class="img-circle"/>
+                </div>
+                <table align="left" style="width:100%">
+                  <tbody>
+                  <tr>
+                    <td style="width:35%;"><span class="span-title">姓名:</span></td>
+                    <td  style="width:65%;"><span class="span span-content" ng-bind-html="selected_report.content.teacher_name"></span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="span-title">邮箱:</span></td>
+                    <td><span class="span span-content" ng-bind-html="selected_report.content.teacher_email"></span></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验文档上传</span>
+                </div>
+                <div ng-repeat="file in selected_report.content.attach_files" class="content">
+                  <a href="file.url" ng-bind-html="file.name" download></a>
+                </div>
+                <div ng-show="!selected_report.is_submit" ngf-select="uploadFiles('report',$files)" ngf-drop="uploadFiles('report',$files)" ngf-multiple="true"
+                     ngf-max-size="50MB" style="height:200px;" class="drop-box">
+                  <span id="report-file-upload-status">拖拽文件至此上传</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid" ng-show="page1=='all'">
+
+          <div class="row block">
+            <div class="title">
+              <span>实验日历</span>
+              <button class="btn btn-success btn-sm" title="收起日历" style="float:right;" ng-click="showHideCalendar()">
+                <i ng-if="!calendar_hidden" class="icon-chevron-up"></i>
+                <i ng-if="calendar_hidden" class="icon-chevron-down"></i>
+              </button>
+              <button id="add-experiment-btn" class="btn btn-info btn-sm" style="float:right" title="添加实验" ng-click="addExperimentDialog.open=true">
+                <i class="icon-plus"></i>
+              </button>
+              <dialog ng-show="addExperimentDialog.open" for="add-experiment-btn" close="addExperimentDialog.open=false" close-action="esc">
+                <div dialog-title>添加实验课程</div>
+                <div dialog-content>
+                  <div class="form-group">
+                    <label for="exp-combo">实验名</label>
+                    <div id="exp-combo"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="classroom-combo">实验教室</label>
+                    <div id="classroom-combo"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="time-combo">实验时间</label>
+                    <div id="time-combo"></div>
+                    <input name="cid" ng-model="addExperimentDialog.chose_eid" hidden>
+                  </div>
+                </div>
+                <div dialog-buttons><button ng-click="add_class(addExperimentDialog.eid);$close();" autofocus>添加</button><button ng-click="$close()">取消</button></div>
+              </dialog>
+
+            </div>
+            <div ng-show="!calendar_hidden" id="experiment-calendar"  class="calendar" ng-model="eventSources" calendar="calendar" ui-calendar="uiConfig.calendar"></div>
+          </div>
+          <div class="row">
+            <div class="col-md-9">
+              <div class="row block" ng-repeat="report in reports.content">
+                <a href="javascript:;" ng-click="changeReport(report.rid)"><span style="font-size:29px" ng-bind-html="report.experiment_name"></span></a>
+                <span style="font-size: 17px;color: #888;margin-left: 30px;" ng-bind-html="report.experiment.week"></span>
+                <button ng-click="deleteDialog[report.experiment.eid]=true" class="btn btn-danger abc">Delete</button>
+                <dialog ng-show="deleteDialog[report.experiment.eid]" close="deleteDialog[report.experiment.eid]=false" close-action="esc">
+                  <div dialog-title>添加实验课程</div>
+                  <div dialog-content>
+                    报告将不可恢复，确认删除?
+                  </div>
+                  <div dialog-buttons><button class="btn btn-danger" ng-click="delete_class(report.experiment.eid);$close();" autofocus>删除</button><button class="btn btn-normal" ng-click="$close()">取消</button></div>
+                </dialog>
+                <div style="float:right">
+
+                  <span style="display:block;" ng-if="!report.is_submit"><i class="icon-circle" style="font-size:14px;color:#f1c40f;" ></i>可提交</span>
+                  <span style="display:block;" ng-if ="report.closed&&!report.is_submit"><i class="icon-circle" style="font-size:14px;color:#e74c3c;"></i>已超时</span>
+                  <span style="display:block;" ng-if="report.closed&&report.is_submit&&report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#3498db;"></i>已出分</span>
+                  <span style="display:block;" ng-if="report.is_submit&&!report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#2ecc71;"></i>已提交</span>
+
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="row block">
+                <div class="title">实验报告完成情况</div>
+                <div id="report_state_chart"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-fluid" ng-show="page1=='grades'">
+          <div class="row block">
+            <div class="title">
+              <span>报告成绩表</span>
+              <button class="btn btn-success btn-sm" style="float:right" ng-click="changeGrades()">刷新</button>
+            </div>
+            <div class="content">
+              <div id="grades-grid">
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

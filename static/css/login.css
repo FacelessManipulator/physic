@@ -1,0 +1,129 @@
+body{
+    font-family: "Microsoft Yahei","Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin:0px;
+}
+.navbar{
+    margin-bottom: 0px;
+}
+.search-box{
+    margin-top:13px;
+    position: relative;
+    width: 300px;
+    height: 26px;
+    line-height:16px;
+    font-size: 13px;
+    padding:2px;
+    background-color: #ffffff;
+    vertical-align: middle;
+    border:1px solid #CCCCCC;
+    border-radius: 3px;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.075) inset;
+}
+.search-box.focus{
+    border-color:#51A7E8 ;
+}
+.search-input{
+    line-height: 16px;
+    display: inline-block;
+    width:200px ;
+    height: 22px;
+    padding: 2px 5px;
+    border: 0px none;
+    box-shadow: none;
+    outline: none;
+}
+.search-explore{
+    font-size: 15px;
+    height: 22px;
+    margin-right: 4px;
+    float: right;
+    color: #34495e;
+    vertical-align: middle;
+}
+.tooltip{
+    font-size: 13px;
+    width: 400%;
+    height: 53px;
+}
+.tooltip-inner{
+    max-width: 500px;
+    width: auto;
+}
+.login-page{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background-image: url("/static/img/index-backgroud-1.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.login-box{
+    padding: 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    border:1px solid #D8DEE2;
+    background-color: #ffffff;
+    width: 340px;
+}
+.login-input{
+    line-height: 16px;
+    display: inline-block;
+    width:100%;
+    height: 30px;
+    padding: 2px 5px;
+    border: 1px solid #CCCCCC;
+    box-shadow: none;
+    outline: none;
+}
+.login-input-small{
+    margin:0px 0px 17px 0px;
+    line-height: 16px;
+    display: inline-block;
+    width:30%;
+    height: 30px;
+    padding: 2px 5px;
+    border: 1px solid #CCCCCC;
+    box-shadow: none;
+    outline: none;
+}
+.login-input.focus{
+    border-color:#51A7E8 ;
+}
+.white-block{
+    font-size: 2px;
+    width:100%;
+    height:20px;
+}
+.error{
+    color:#e74c3c;
+}
+.login-statu{
+    width:100%;
+    font-size:15px;
+    text-align:center;
+}
+.index-title{
+    color: white;
+    font-size: 40px;
+    font-weight: normal;
+    margin-bottom:40px;
+}
+.index-p{
+    color: white;
+    font-size: 21px;
+    font-weight: 300;
+    margin-top: 10px;
+}
+.index-p>a{
+    color: #4078c0;
+}
+.index-p>a:hover{
+    color: #4fa8ff;
+}
+.slide.ng-enter {
+  transition:0.5s linear all;
+  transform:translateX(100%);
+}
+.slide.ng-enter.ng-enter-active {
+  transform:translateY(0);
+}

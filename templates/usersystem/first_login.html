@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block css %}
+  <link href="/static/css/first-login.css" rel="stylesheet"/>
+{% endblock%}
+{% block script %}
+  <script src="/static/js/first-login.js"></script>
+{% endblock %}
+{% block content %}
+  <div ng-app="physiclab.firstLoginApp" class="first-login-page container">
+      <div class="row">
+          {% include "navbar.html"%}
+      </div>
+
+  </div>
+{% endblock %}
