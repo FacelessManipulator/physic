@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>大工物光在线实验平台账号密码变更通知</title>
+</head>
+<body>
+<p>亲爱的{{nickname}}:</p>
+<p>您好!您的账号{{account}}于{% now "SHORT_DATETIME_FORMAT" %}发生密码变更。如果这不是您本人的行为，请前往</p>
+    <p><a href="{{reset_url}}">{{reset_url}}</a></p>
+<p>重置并更改密码。</p>
+<p>如果链接不能点击，请复制以上地址到浏览器，然后直接打开。</p>
+<div style="float:right;">
+    <p>大工物理与光电学院在线实验平台管理组 </p>
+    <p>{% now "SHORT_DATETIME_FORMAT" %}</p>
+</div>
+</body>
+</html>
