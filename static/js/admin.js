@@ -3,6 +3,7 @@
 var adminApp = angular.module('physiclab.admin',
         ['angular-popups','physiclab.directives','igniteui-directives' ,'ngSanitize', 'ngFileUpload','ngTagsInput']);
 adminApp.config(function($httpProvider) {
+    //TODO: 除了公共接口，本js所用到的所有接口都有管理员验证,必须以管理员账户登陆才能使用
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 
@@ -20,6 +21,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
     $scope.page3 = '';
     $scope.csvPopup = {open:{'teacher':false,'student':false}};
     $scope.ExperimentCsvPopup = {open:false};
+    $scope.ExperimentImportCsvPopup = {open:false};
     $scope.csvDialog = {open:{'teacher':false,'student':false},count:0,successNum:0,failList:[],sample:[],csv:null,confirm:function(group){
         if(this.count>0){
             this.csv.forEach(function(e){
@@ -36,6 +38,25 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
         this.open[group]=false;
         $scope.csvPopup.open[group]=true;
     },clear:function(){this.open={teacher:false,student:false};this.count=0;this.successNum=0;this.failList.splice(0,this.failList.length);this.sample.splice(0,this.sample.length)}};
+    $scope.ExperimentImportCsvDialog = {open:false,count:0,successNum:0,failList:[],sample:[],csv:null,confirm:function(eid){
+        if(this.count>0){
+            this.csv.forEach(function(e){
+            //TODO: post the csv data [base_title, title, teacher_name, date, time, classroom]
+                $scope.modifyData('/experiment/add',
+                    {'b_title':e[0],'title':e[1],'teacher_name':e[2],'date':e[3],'time':e[4],'classroom':e[5]},undefined,undefined,undefined,
+                    function(response){
+                        if(response.data.status == 201)
+                            $scope.ExperimentImportCsvDialog.successNum+=1;
+                        else{
+                            $scope.ExperimentImportCsvDialog.failList.push({'b_title':e[0],'title':e[1],'msg':response.data.msg});
+                        }
+                });
+            });
+        }
+        this.open=false;
+        $scope.ExperimentImportCsvPopup.open=true;
+    },clear:function(){this.open=false;this.count=0;this.successNum=0;this.failList.splice(0,this.failList.length);this.sample.splice(0,this.sample.length)}};
+
     $scope.ExperimentCsvDialog = {open:false,count:0,successNum:0,failList:[],sample:[],csv:null,confirm:function(eid){
         if(this.count>0){
             this.csv.forEach(function(e){
@@ -57,6 +78,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
     $scope.report_list_render = false;
     $scope.experiments = {"loaded":false, 'content':[],'url':'/experiment/sub'};
     $scope.active_choice = [{"key":'false', 'value':'否'},{"key":'true', 'value':'是'},];
+    //TODO: 由于时间的不确定性，此属性已经被废弃
     $scope.class_time = [{"key":'第一大节', 'value':'第一大节'},
                           {"key":'第二大节', 'value':'第二大节'},
                           {"key":'第三大节', 'value':'第三大节'},
@@ -110,12 +132,34 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                             if(id){
                                 if(regenerate){
                                 // TODO: 多重实验表填坑用if
-                                    $scope.generateHierarchicalGrid(id,origin);
+                                    $(id).igHierarchicalGrid("destroy");
+                                    $scope.generateHierarchicalGrid(id);
+                                    $scope.experiments.loaded = false;
                                 }
-                                $(id).igGrid("dataSourceObject", origin);
-                                $(id).igGrid('dataBind');
+                                else{
+                                    $(id).igGrid("dataSourceObject", origin);
+                                    $(id).igGrid('dataBind');
+                                }
                             }
                         }
+                        break;
+
+                    //TODO: status 506会提供用户友好的错误信息提示,可直接alert那种
+                    case 506:
+                        if(origin){
+                            if(response.data.content)
+                                origin.add(response.data.content);
+                            if(id){
+                                if(regenerate){
+                                // TODO: 多重实验表填坑用if
+                                    $(id).igHierarchicalGrid("destroy");
+                                    $scope.generateHierarchicalGrid(id);
+                                    $scope.experiments.loaded = false;
+                                }
+                            }
+                        }
+                        if(response.data.msg)
+                            alert(response.data.msg);
                         break;
                     }
                 }
@@ -155,8 +199,12 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                 $('#error').html("<i style='color:red;margin-right:15px;' class='icon-warning-sign'></i>连接超时,请刷新后在试");
             });
     };
-    $scope.generateHierarchicalGrid = function(){
-        $("#experiment-grid").igHierarchicalGrid({
+    $scope.generateHierarchicalGrid = function(id){
+        if(id)
+            var _id = id;
+        else
+            var _id = "#experiment-grid";
+        $(_id).igHierarchicalGrid({
             width: "100%",
                 autoGenerateColumns: false,
                 primaryKey: "bid",
@@ -186,6 +234,12 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                                     columnKey: "bid",
                                     editorType: 'text',
                                     required: false,
+                                    validation: true,
+                                },
+                                {
+                                    columnKey: "title",
+                                    editorType: 'text',
+                                    required: true,
                                     validation: true,
                                 },
                                 {
@@ -265,9 +319,12 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                    { key: "title", headerText: "实验号", dataType: "string", width: "10%" },
                    { key: "name", headerText: "实验名", dataType: "string", width: "30%" },
                    { key: "type", headerText: "实验类型", dataType: "string", width: "10%" },
-                   { key: "start_time", headerText: "开始时间", dataType: "date", width: "20%" },
-                   { key: "created_time", headerText: "创建时间", dataType: "date", width: "20%" },
-                   { key: "is_active", headerText: "激活", dataType: "string", width: "10%" },
+//                   { key: "start_time", headerText: "开始时间", dataType: "date", width: "20%" },
+//                   { key: "created_time", headerText: "创建时间", dataType: "date", width: "20%" },
+                   { key: "is_active", headerText: "激活", dataType: "string", width: "20%" },
+                   { key: "jump", headerText: "教师列表", dataType: "string",unbound:true, width: "20%",
+                                template:"<button class='btn btn-success btn-xs' onclick='changeToExperiment(${eid})'>教师列表</button>" },
+
                 ],
                 autoGenerateLayouts: false,
                 columnLayouts: [
@@ -280,10 +337,11 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                         autoCommit: true,
                         columns: [
                             { key: "eid", headerText: "课程id", dataType: "number", width: "0%", hidden:true },
-                            { key: "title", headerText: "课程号", dataType: "string", width: "10%" },
+                            { key: "title", headerText: "节次号", dataType: "string", width: "10%" },
                             { key: "classroom", headerText: "教室", dataType: "string", width: "25%" },
                             { key: "date", headerText: "实验日期", dataType: "date", width: "20%" },
                             { key: "time", headerText: "实验时间", dataType: "string", width: "15%" },
+                            { key: "teacher_name", headerText: "老师", dataType: "string", width: "15%" },
                             { key: "jump", headerText: "学生列表", dataType: "string",unbound:true, width: "10%",
                                 template:"<button class='btn btn-success btn-xs' onclick='changeToExperiment(${eid})'>学生列表</button>" },
 
@@ -308,7 +366,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                                     if($scope.experiment.content.experiment[i].bid == bid)
                                         base = $scope.experiment.content.experiment[i];
                                 }
-                                $scope.modifyData('/experiment/add',ui.values,base.sub_class,'#'+evt.target.id);
+                                $scope.modifyData('/experiment/add',ui.values,base.sub_class,'#experiment-grid',true);
                             },
                             rowDeleted: function(evt, ui){
                                 $scope.modifyData('/experiment/delete', {'eid':ui.rowID});
@@ -327,6 +385,20 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                                     validation: true,
                                 },
                                 {
+                                    columnKey: "title",
+                                    editorType: 'text',
+                                    required: true,
+                                    validation: true,
+                                },
+                                //TODO: 因为以后选课其中一项条件是根据老师的，所以这里设置教师为必填项
+                                //TODO: 只是前端做了限制，后端没有限制
+                                {
+                                    columnKey: "teacher_name",
+                                    editorType: 'text',
+                                    required: true,
+                                    validation: true,
+                                },
+                                {
                                     columnKey: "classroom",
                                     editorType: 'text',
                                     required: true,
@@ -340,14 +412,14 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                                 },
                                 {
                                     columnKey: "time",
-                                    editorType: 'combo',
+                                    editorType: 'string',
                                     required: true,
-                                    editorOptions: {
-                                        dataSource: $scope.class_time,
-                                        valueKey: "key",
-                                        textKey: "value",
-                                        mode: "dropdown",
-                                    },
+//                                    editorOptions: {
+//                                        dataSource: $scope.class_time,
+//                                        valueKey: "key",
+//                                        textKey: "value",
+//                                        mode: "dropdown",
+//                                    },
                                     validation: true,
                                 },
                                 {
@@ -380,36 +452,6 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                                      }
                                  ]
                              },
-                             {
-                                name: "Summaries",
-                                showDropDownButton: false,
-                                showSummariesButton: false,
-                                 columnSettings: [
-                                      {
-                                          columnKey: "eid",
-                                          summaryOperands: [
-                                              {
-                                                  rowDisplayLabel: "数量",
-                                                  type: "count",
-                                                  decimalDisplay: 3
-                                              }
-                                          ]
-
-                                      },
-                                     {
-                                         columnKey: "classroom",
-                                         allowSummaries: false
-                                     },
-                                     {
-                                          columnKey: "date",
-                                          allowSummaries: false
-                                     },
-                                     {
-                                         columnKey: "time",
-                                          allowSummaries: false
-                                     },
-                                 ]
-                             }
                         ]
                     }
                 ]
@@ -421,9 +463,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             u_columns = [
                     { headerText: "账号", key: "username", dataType: "string", width: "10%" },
                     { headerText: "姓名", key: "name", dataType: "string", width: "10%" },
-                    { headerText: "学院", key: "institute", dataType: "string", width: "10%" },
-                    { headerText: "地址", key: "address", dataType: "string", width: "15%" },
-
+                    { headerText: "办公室", key: "address", dataType: "string", width: "15%" },
                     { headerText: "邮箱", key: "email", dataType: "string", width: "15%"},
                     { headerText: "电话", key: "phone", dataType: "string", width: "10%" },
                     { headerText: "激活", key: "is_active", dataType: "string", width: "10%" },
@@ -545,12 +585,12 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             columns: [
                     { headerText: "课程id", key: "eid", dataType: "string", width: "0%", hidden:true },
                     { headerText: "实验号", key: "b_title", dataType: "string", width: "15%" },
-                    { headerText: "课程号", key: "title", dataType: "string", width: "15%" },
+                    { headerText: "节次号", key: "title", dataType: "string", width: "15%" },
                     { headerText: "实验名", key: "name", dataType: "string", width: "15%" },
                     { headerText: "教室", key: "classroom", dataType: "string", width: "15%"},
                     { headerText: "日期", key: "date", dataType: "date", width: "15%" },
                     { headerText: "时间", key: "time", dataType: "string", width: "15%" },
-                    { key: "jump", headerText: "详情", dataType: "string",unbound:true, width: "10%",
+                    { key: "jump", headerText: "实验详情", dataType: "string",unbound:true, width: "10%",
                       template:"<button class='btn btn-success btn-xs' onclick='changeToExperiment(${eid})'>详情</button>" },
                 ],
             autofitLastColumn: true,
@@ -560,63 +600,56 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             autoCommit: false,
             requestError: function(evt, ui) {console.log("request error")},
             features: [
-                    {
-						name: "Updating",
-						enableAddRow: true,
-						enableDeleteRow: true,
-						editMode: "row",
-                        editRowEnded: function(evt, ui){
-                            if(!ui.rowAdding && ui.update){
-                                $scope.modifyData('/experiment/modify', ui.values);
-                            }
-                        },
-                        rowAdded: function(evt, ui){
-                            ui.values.uid = $scope.search_result.username;
-                            $scope.modifyData('/experiment/user/add',ui.values,$scope.search_result.content.experiments,"#" + id + "-grid");
-                        },
-                        rowDeleted: function(evt, ui){
-                            $scope.modifyData('/experiment/user/delete', {'eid':ui.rowID,'uid':$scope.search_result.username});
-                        },
-						columnSettings: [
-							{
-							    columnKey: "eid",
-								editorType: 'combo',
-								required: true,
-								editorOptions: {
-                                    dataSource: $scope.ExperimentList,
-                                    valueKey: "key",
-                                    textKey: "value",
-                                    mode: "dropdown",
-								},
-								validation: true,
-							},
-							{
-							    columnKey: "name",
-								editorType: 'text',
-								readOnly: true,
-								validation: true,
-							},
-							{
-							    columnKey: "classroom",
-								editorType: 'text',
-								readOnly: true,
-								validation: true,
-							},
-							{
-								columnKey: "date",
-								editorType: 'text',
-								readOnly: true,
-								validation: true,
-							},
-
-							{
-								columnKey: "time",
-								editorType: 'text',
-								readOnly: true,
-								validation: true,
-							}
-						],
-					},
+//                    {
+//						name: "Updating",
+//						enableAddRow: true,
+//						enableDeleteRow: true,
+//						editMode: "row",
+//                        editRowEnded: function(evt, ui){
+//                            if(!ui.rowAdding && ui.update){
+//                                $scope.modifyData('/experiment/modify', ui.values);
+//                            }
+//                        },
+//                        rowAdded: function(evt, ui){
+//                            ui.values.uid = $scope.search_result.username;
+//                            $scope.modifyData('/experiment/user/add',ui.values,$scope.search_result.content.experiments,"#" + id + "-grid");
+//                        },
+//                        rowDeleted: function(evt, ui){
+//                            $scope.modifyData('/experiment/user/delete', {'eid':ui.rowID,'uid':$scope.search_result.username});
+//                        },
+//						columnSettings: [
+//							{
+//							    columnKey: "eid",
+//								editorType: 'combo',
+//								readOnly: true,
+//							},
+//							{
+//							    columnKey: "name",
+//								editorType: 'text',
+//								readOnly: true,
+//								validation: true,
+//							},
+//							{
+//							    columnKey: "classroom",
+//								editorType: 'text',
+//								readOnly: true,
+//								validation: true,
+//							},
+//							{
+//								columnKey: "date",
+//								editorType: 'text',
+//								readOnly: true,
+//								validation: true,
+//							},
+//
+//							{
+//								columnKey: "time",
+//								editorType: 'text',
+//								readOnly: true,
+//								validation: true,
+//							}
+//						],
+//					},
                     {
                         name: "Sorting",
                         type: "local",
@@ -627,9 +660,9 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                         mode: "advanced",
                         filterDialogContainment: "window"
                     },
-                    {
-                        name: "ColumnMoving",
-                    },
+//                    {
+//                        name: "ColumnMoving",
+//                    },
                     {
                         name: 'Paging',
                         type: "local",
@@ -660,23 +693,25 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             autoCommit: false,
             requestError: function(evt, ui) {console.log("request error")},
             features: [
+            //TODO: 为防止批改混乱，在前端防止了管理员对成绩的修改
+            //TODO: 服务端层面已经禁止
                     {
 						name: "Updating",
 						enableAddRow: false,
-						//TODO: 为了安全这里把删除功能也关了
-						enableDeleteRow: false,
+//						//TODO: 为了安全这里把删除功能也关了
+						enableDeleteRow: true,
 						editMode: "row",
-                        editRowEnded: function(evt, ui){
-                            if(!ui.rowAdding && ui.update){
-                                //$scope.modifyData('/user/report/modify', ui.values);
-                            }
-                        },
-                        rowAdded: function(evt, ui){
-                            ui.values.uid = $scope.search_result.username;
-                            $scope.modifyData('/user/report/add',ui.values,$scope.search_result.content.reports,"#" + id + "-grid");
-                        },
+//                        editRowEnded: function(evt, ui){
+//                            if(!ui.rowAdding && ui.update){
+//                                //$scope.modifyData('/user/report/modify', ui.values);
+//                            }
+//                        },
+//                        rowAdded: function(evt, ui){
+//                            ui.values.uid = $scope.search_result.username;
+//                            $scope.modifyData('/user/report/add',ui.values,$scope.search_result.content.reports,"#" + id + "-grid");
+//                        },
                         rowDeleted: function(evt, ui){
-                            $scope.modifyData('/user/report/delete', {'rid':ui.rowID,'uid':$scope.search_result.username});
+                            $scope.modifyData('/experiment/user/delete', {'rid':ui.rowID,'uid':$scope.search_result.username});
                         },
 						columnSettings: [
 							{
@@ -700,19 +735,21 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
 							{
 								columnKey: "total_grades",
 								editorType: 'numeric',
-								required: false,
-								validation: true,
+//								required: false,
+//								validation: true,
+								readOnly: true,
 							},
 							{
 								columnKey: "is_corrected",
 								editorType: 'combo',
-								required: true,
-								editorOptions: {
-                                    dataSource: $scope.active_choice,
-                                    valueKey: "key",
-                                    textKey: "value",
-                                    mode: "dropdown",
-								},
+								readOnly: true,
+//								required: true,
+//								editorOptions: {
+//                                    dataSource: $scope.active_choice,
+//                                    valueKey: "key",
+//                                    textKey: "value",
+//                                    mode: "dropdown",
+//								},
 							}
 						],
 					},
@@ -725,9 +762,6 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                         type: "local",
                         mode: "advanced",
                         filterDialogContainment: "window"
-                    },
-                    {
-                        name: "ColumnMoving",
                     },
                     {
                         name: 'Paging',
@@ -767,8 +801,9 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
     };
     $scope.changeToExperimentList = function(){
         if($scope.experiment.loaded){
-            $("#experiment-grid").igGrid("dataSourceObject", $scope.experiment.content.experiment);
-            $("#experiment-grid").igGrid("dataBind");
+        //TODO: regenerate
+            $("#experiment-grid").igHierarchicalGrid("destroy");
+            $scope.generateHierarchicalGrid("#experiment-grid");
         }
         else{
             $scope.generateHierarchicalGrid();
@@ -934,12 +969,15 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             $scope.freshData($scope.experiments);
             $scope.experiments.loaded = true;
         }
-        if(eid){
-            $scope.selected_experiment = $scope.findDictFromArray($scope.experiments.content, 'eid', $scope.search_experiment_eid);
-            if($scope.selected_experiment){
-                $scope.selected_experiment['url'] = '/experiment/sub?eid='+$scope.search_experiment_eid;
-                $scope.freshData($scope.selected_experiment, $scope.render_experiment);
-            }
+        var temp = $scope.findDictFromArray($scope.experiments.content, 'eid', $scope.search_experiment_eid);
+        if(temp){
+            $scope.selected_experiment = temp;
+            $scope.selected_experiment['url'] = '/experiment/sub?eid='+$scope.search_experiment_eid;
+            $scope.freshData($scope.selected_experiment, $scope.render_experiment);
+        }
+        else{
+            //TODO: 不存在的eid,未来可以换更加友好的提示
+            //alert("不存在的实验号");
         }
     };
 
@@ -1096,7 +1134,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             }
             $scope.csvDialog.open[group]=true;
         }
-        reader.readAsText(file);//默认utf-8编码
+        reader.readAsText(file,'gb2312');//默认utf-8编码
     };
     $scope.parse_csv_experiment = function(file,eid){
         if(typeof FileReader == 'undefined'){
@@ -1115,7 +1153,27 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             $scope.ExperimentCsvDialog.open=true;
             $scope.ExperimentCsvDialog.cur_eid=eid;
         }
-        reader.readAsText(file);//默认utf-8编码
+        reader.readAsText(file,'gb2312');//默认utf-8编码
+    };
+
+    $scope.parse_csv_experiment_import = function(file){
+        if(typeof FileReader == 'undefined'){
+            alert("浏览器不支持FileReader接口！请改用chrome或其他浏览器再次尝试");
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(){
+            var content = reader.result;
+            var csv = new CSV(content).parse();
+            //TODO: parse the import csv
+            $scope.ExperimentImportCsvDialog.count = csv.count();
+            if($scope.ExperimentImportCsvDialog.count>0){
+                $scope.ExperimentImportCsvDialog.sample = csv[0];
+                $scope.ExperimentImportCsvDialog.csv = csv;
+            }
+            $scope.ExperimentImportCsvDialog.open=true;
+        }
+        reader.readAsText(file,'gb2312');//默认utf-8编码
     };
     $scope.resetPassword = function(username){
         $http.get('/user/reset-password?username='+username,{}).then(

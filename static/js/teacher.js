@@ -25,7 +25,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.tag_reason = {'raw_data_content':'','objective_content':'',
         'principle_content':'','process_content':'','data_processing_content':'',
         'instrument_content':'','thinking_content':''};
-    $scope.tag_grade = 1;
+    $scope.tag_grade = {};
 
     $scope.events1 = {'color': '#3498db','events':$scope.closed_events};
     $scope.events2 = {'color': '#f1c40f','events':$scope.unclosed_events};
@@ -49,6 +49,12 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.experiments = {"loaded":false, 'content':[]};
     $scope.selected_experiment = {'loaded':false, 'content':{}};
     $scope.selected_report = {'loaded':false, 'content':{}};
+    $scope.addTagDialog = {block: '',open:false, grade: 1, reason: '', clear: function(block){this.grade=1;this.reason='';this.block=block;},
+        add_tag:function(){
+            if(this.block != ''){
+                $scope.add_tag(this.block+'_content',this.grade, this.reason);
+            }
+        }};
     function removeElement(_element){
          var _parentElement = _element.parentNode;
          if(_parentElement){
@@ -692,22 +698,38 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         $("#report_grade").igNumericEditor('value',$scope.selected_report.total_grades);
         $scope.submitGrade();
     };
-    $scope.add_tag = function(block){
+    $scope.add_tag = function(block, grade, reason){
         var parent = $("#"+block);
-        if(typeof($scope.tag_reason[block]) == 'object')
-            $scope.tag_reason[block] = $scope.tag_reason[block][0];
-        if(jQuery.inArray($scope.tag_reason[block],$scope.tag_types)){
-            $scope.tag_types.push({"key":$scope.tag_reason[block],"value":$scope.tag_reason[block]});
-            $(".tag_combo").igCombo("dataBind");
-        }
+        if(grade)
+            var _grade = grade;
 
-        $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
-                                               'grade':$scope.tag_grade,
-                                               'reason':$scope.tag_reason[block],
+        if(reason)
+            var _reason = reason;
+//        if(typeof($scope.tag_reason[block]) == 'object')
+//            $scope.tag_reason[block] = $scope.tag_reason[block][0];
+//        if(jQuery.inArray($scope.tag_reason[block],$scope.tag_types)){
+//            $scope.tag_types.push({"key":$scope.tag_reason[block],"value":$scope.tag_reason[block]});
+//            $(".tag_combo").igCombo("dataBind");
+//        }
+//
+//        $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
+//                                               'grade':$scope.tag_grade[block],
+//                                               'reason':$scope.tag_reason[block],
+//                                               'html':'',
+//                                               'block':block,
+//                                               },
+//                           $scope.selected_report.content.tags,$scope.render_tags);
+            if(jQuery.inArray(_reason,$scope.tag_types)){
+                $scope.tag_types.push({"key":$scope._reason,"value":_reason});
+                $(".tag_combo").igCombo("dataBind");
+            }
+               $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
+                                               'grade':_grade,
+                                               'reason':_reason,
                                                'html':'',
                                                'block':block,
                                                },
-                           $scope.selected_report.content.tags,$scope.render_tags);
+               $scope.selected_report.content.tags,$scope.render_tags);
     };
     $scope.move_tag = function(tid, style){
         var tag = $scope.findDictFromArray($scope.selected_report.content.tags,'tid',tid);
@@ -868,10 +890,10 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         }
     };
     $scope.push_back = function(){
-        $scope.modifyData('/user/push-back',{'rid':$scope.selected_report.rid,'reason':$scope.submitDialog.reason});
-        $scope.submitDialog.open = false;
         $scope.selected_report.is_submit = false;
-        $scope.correct();
+        $scope.submitDialog.open = false;
+        $scope.modifyData('/user/push-back',{'rid':$scope.selected_report.rid,'reason':$scope.submitDialog.reason});
+        //$scope.correct();
     };
     $scope.alertOnEventClick = function(date, jsEvent, view){
         $scope.changeExperiment(date.eid);

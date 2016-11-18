@@ -3,15 +3,14 @@
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
 <link rel="stylesheet" href="/static/bower_components/fullcalendar/dist/fullcalendar.css"/>
 <link href="/static/css/experiment-list.css" rel="stylesheet"/>
-<link href="/static/jmeditor/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
+<link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
 {% endblock%}
 {% block script %}
 <script src="/static/angularjs/1.5/angular-sanitize.min.js"></script>
 <script src="/static/angularjs/1.5/ng-file-upload-shim.min.js"></script>
 <script src="/static/angularjs/1.5/ng-file-upload.min.js"></script>
 <script src="/static/js/angular-popups.js"></script>
-<script src="/static/jmeditor/mathquill-0.9.1/mathquill.min.js" ></script>
-<script src="/static/jmeditor/JMEditor.js"></script>
+<script src="/static/mathquill-0.9.1/mathquill.min.js" ></script>
 <script type="text/javascript" src="/static/bower_components/moment/min/moment.min.js"></script>
 <script type="text/javascript" src="/static/bower_components/angular-ui-calendar/src/calendar.js"></script>
 <script type="text/javascript" src="/static/bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
@@ -29,8 +28,7 @@
 "angularjs/1.5/ng-file-upload-shim.min.js,"+
 "angularjs/1.5/ng-file-upload.min.js,"+
 "js/angular-popups.js,"+
-"jmeditor/mathquill-0.9.1/mathquill.min.js,"+
-"jmeditor/JMEditor.js,"+
+"mathquill-0.9.1/mathquill.min.js,"+
 "bower_components/moment/min/moment.min.js,"+
 "bower_components/angular-ui-calendar/src/calendar.js,"+
 "bower_components/fullcalendar/dist/fullcalendar.min.js,"+
@@ -45,6 +43,8 @@
         $scope.changeReport(rid);
     }
 </script>
+
+<script src="/static/js/math-editor.js"></script>
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
 <div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl">
   <div class="row">
@@ -124,6 +124,10 @@
                 </div>
                 <div class="content" id="raw_data_content" ng-show="editing_block !='raw_data'"></div>
                 <div id="raw_data_editor" ng-show="editing_block =='raw_data'"></div>
+                <div ngf-select="uploadImages('instrument',$files)" ngf-drop="uploadImages('raw_data',$files)" ng-show="editing_block =='raw_data'" ngf-multiple="true" ngf-pattern="'image/*'"
+                     ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
+                  <span id="raw_data-image-upload-status">拖拽图片至此添加</span>
+                </div>
 
               </div>
               {% if Config.show_extra_block %}
@@ -231,10 +235,20 @@
                 </div>
               </div>
 
-              <div id="math_editor_dialog">
-                <iframe id="math_frame" style="width:350px;height:320px;;" frameborder="no" src="/static/jmeditor/ckeditor/plugins/jme/dialogs/mathdialog.html"></iframe>
-                <button class="btn btn-success" ng-click="math_output()">导入公式</button>
-              </div>
+              <dialog ng-show="mathDialog.open" close="mathDialog.open=false"
+                      style="width:30%;left:60%" close-action="esc outclick">
+                <div dialog-title>插入公式</div>
+                <div dialog-content style="overflow:hidden">
+                  <div id="math-dialog" style="height:200px;overflow-y:scroll">
+                    <div id="math-dialog-formula"></div>
+                    <div id="math-dialog-symbol"></div>
+                    <div id="math-dialog-letter"></div>
+                  </div>
+                  <div id="math-dialog-editor" style="margin-top:20px;width:100%"></div>
+                </div>
+                <div dialog-buttons><button ng-click="math_output();$close();" autofocus>插入</button><button ng-click="$close()">取消</button></div>
+              </dialog>
+
             </div>
             <div class="col-md-3">
               <div class="row block" ng-if="selected_report.content.back_reason!=''">
@@ -360,8 +374,8 @@
                   </div>
 
                   <div class="form-group">
-                    <label for="classroom-combo">实验教室</label>
-                    <div id="classroom-combo"></div>
+                    <label for="teacher-combo">教师</label>
+                    <div id="teacher-combo"></div>
                   </div>
 
                   <div class="form-group">

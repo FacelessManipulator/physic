@@ -1,3 +1,4 @@
+#coding=utf-8
 from __future__ import unicode_literals
 
 from django.db import models
@@ -26,7 +27,7 @@ class BaseExperiment(models.Model):
         dic['created_time'] = str(self.created_time)
         dic['start_time'] = str(self.start_time)
         if not simple:
-            dic['sub_class'] = [exp.get_dict() for exp in self.experience.all()]
+            dic['sub_class'] = [exp.get_dict(simple=False) for exp in self.experience.all()]
         else:
             pass
         return dic
@@ -35,6 +36,7 @@ class BaseExperiment(models.Model):
 class Experiment(models.Model):
     eid = models.AutoField(primary_key=True)
     title = models.CharField(max_length=128, default='')
+    #TODO: 当我意识到外键名字写错的时候，已经不想改了
     base = models.ForeignKey('BaseExperiment', related_name='experience', on_delete=models.CASCADE)
     classroom = models.CharField(max_length=256, default='')
     date = models.DateField(null=True, blank=True)
@@ -47,14 +49,32 @@ class Experiment(models.Model):
         dic['b_title'] = self.base.title
         dic['classroom'] = self.classroom
         dic['name'] = self.base.name
+
         if self.date is not None:
-            dic['date'] = self.date
+            dic['date'] = str(self.date)
             Config = WebsiteConfig.objects.all()[0]
             dic['end_date'] = Config.get_end_date(self.date)
             dic['closed'] = str(self.date) < str(datetime.date.today())
             dic['week'] = Config.get_weekdays(self.date) + '/' + self.time
+
+
         dic['time'] = self.time
         if not simple:
+            teachers = self.user.filter(group='teacher')
+            if len(teachers) == 1:
+                dic['teacher'] = teachers[0].get_dict()
+                dic['teacher_name'] = dic['teacher'].get('name','')
+            elif len(teachers) > 1:
+                try:
+                    temp = teachers[0]
+                    self.user.clear()
+                    self.user.add(temp)
+                except:
+                    pass
+                finally:
+                    dic['teacher'] = {}
+            else:
+                dic['teacher'] = {}
             dic['base'] = self.base.get_dict()
         if attachReport:
             report_set = self.report.all()

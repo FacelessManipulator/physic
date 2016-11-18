@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
 from django.contrib.auth.models import User
-from usersystem.models import WebsiteConfig
+from usersystem.models import WebsiteConfig, UserBaseInfo
 # Create your views here.
 from models import Experiment, BaseExperiment
 
@@ -40,9 +40,10 @@ def receive_image(request):
 @login_required
 def get_all_experiment(request):
     try:
-        experiments = Experiment.objects.all()
-        experiments = [experiment.get_dict(simple=False) for experiment in experiments]
-        return JsonResponse({'status': 201, 'content': experiments})
+        bases = BaseExperiment.objects.filter(is_active=True)
+        experiments = []
+        [experiments.extend(base.experience.all()) for base in bases]
+        return JsonResponse({'status': 201, 'content': [exp.get_dict(simple=False) for exp in experiments if exp is not None]})
     except:
         return JsonResponse({'status': 500})
 
@@ -100,6 +101,8 @@ def add_base_experiment(request):
             title = request.POST.get('title', '')
             start_time = request.POST.get('start_time')
             type = request.POST.get('type', '')
+            if BaseExperiment.objects.filter(title=title).exists():
+                return JsonResponse({'status': 506, 'msg': '实验号重复'})
             try:
                 if start_time is None:
                     base = BaseExperiment(name=name, type=type, created_user=user.name, title=title)
@@ -164,16 +167,41 @@ def add_experiment(request):
     if user.user.is_superuser:
         if request.method == 'POST':
             bid = request.POST.get('bid')
+            b_title = request.POST.get('b_title')
             classroom = request.POST.get('classroom', '')
             date = request.POST.get('date')
             time = request.POST.get('time', '')
             title = request.POST.get('title', '')
+            teacher_name = request.POST.get('teacher_name', '')
             try:
-                base = BaseExperiment.objects.get(bid=bid)
+                if bid is None:
+                    if b_title != '':
+                        base = BaseExperiment.objects.get(title=b_title)
+                    else:
+                        return JsonResponse({'status': 506, 'msg': '错误的实验号'})
+                else:
+                    base = BaseExperiment.objects.get(bid=bid)
+                if base.experience.filter(title=title).exists():
+                    return JsonResponse({'status': 506, 'msg': '相同实验下不能有重复节次号'})
                 if date is None:
                     e = base.experience.create(classroom=classroom, time=time, title=title)
                 else:
                     e = base.experience.create(classroom=classroom, time=time, date=date, title=title)
+                if teacher_name != '':
+                    teacher = UserBaseInfo.objects.filter(group='teacher').filter(name=teacher_name)
+                    if len(teacher) == 1:
+                        e.user.clear()
+                        e.user.add(teacher[0])
+                    elif len(teacher) > 1:
+                        return JsonResponse({'status': 506, 'msg': '存在重名教师,请改为输入账号'})
+                    else:
+                        teacher = User.objects.filter(username=teacher_name)
+                        if len(teacher) == 0:
+                            return JsonResponse({'status': 506, 'msg': '该教师不存在','content': e.get_dict()})
+                        else:
+                            e.user.clear()
+                            e.user.add(teacher[0].userBaseInfo)
+                e.save()
                 return JsonResponse({'status': 201, 'msg': '添加成功', 'content':  e.get_dict()})
             except Exception,e:
                 return JsonResponse({'status': 505, 'msg': '不支持的操作'})
@@ -189,6 +217,7 @@ def modify_experiment(request):
             classroom = request.POST.get('classroom', '')
             date = request.POST.get('date')
             time = request.POST.get('time', '')
+            teacher_name = request.POST.get('teacher_name', '')
             title = request.POST.get('title', '')
             try:
                 exp = Experiment.objects.get(eid=eid)
@@ -198,6 +227,20 @@ def modify_experiment(request):
                 if date is not None:
                     exp.date = date
                 exp.save()
+                if teacher_name != '':
+                    teacher = UserBaseInfo.objects.filter(group='teacher').filter(name=teacher_name)
+                    if len(teacher) == 1:
+                        exp.user.clear()
+                        exp.user.add(teacher[0])
+                    elif len(teacher) > 1:
+                        return JsonResponse({'status': 506, 'msg': '存在重名教师,请改为输入账号'})
+                    else:
+                        teacher = User.objects.filter(username=teacher_name)
+                        if len(teacher) == 0:
+                            return JsonResponse({'status': 506, 'msg': '该教师不存在'})
+                        else:
+                            exp.user.clear()
+                            exp.user.add(teacher[0].userBaseInfo)
                 return JsonResponse({'status': 201, 'msg': '修改成功'})
             except:
                 return JsonResponse({'status': 505, 'msg': '修改失败'})
@@ -230,11 +273,13 @@ def user_add_experiment(request):
             eid = request.POST.get('eid')
             uid = request.POST.get('uid')
             try:
-                if eid:
-                    exp = Experiment.objects.get(eid=eid)
-                else:
+                if b_title != '' and title != '':
                     base = BaseExperiment.objects.filter(title=b_title)[0]
                     exp = base.experience.filter(title=title)[0]
+                elif eid:
+                    exp = Experiment.objects.get(eid=eid)
+                else:
+                    return JsonResponse({'status': 505, 'msg': '添加失败'})
                 user = User.objects.get(username=uid).userBaseInfo
                 if user.report.filter(experiment=exp).exists():
                     return JsonResponse({'status': 505, 'msg': '已存在'})
@@ -263,11 +308,18 @@ def user_delete_experiment(request):
     user = request.user.userBaseInfo
     if user.user.is_superuser:
         if request.method == 'POST':
+            #TODO: 可以分别通过报告号或者实验id来唯一区分实验
             eid = request.POST.get('eid')
+            rid = request.POST.get('rid')
             uid = request.POST.get('uid')
             try:
-                exp = Experiment.objects.get(eid=eid)
                 user = User.objects.get(username=uid).userBaseInfo
+                if eid is not None:
+                    exp = Experiment.objects.get(eid=eid)
+                elif rid is not None:
+                    exp = user.report.get(rid=rid).experiment
+                else:
+                    return JsonResponse({'status': 506, 'msg': '不存在的实验'})
                 user.experiment.remove(exp)
                 user.report.filter(experiment=exp).delete()
                 return JsonResponse({'status': 201, 'msg': '删除成功'})

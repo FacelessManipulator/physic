@@ -121,6 +121,7 @@ body{
 .title{
     font-size: 20px;
     width: 100%;
+    position:relative;
     border-bottom: #eee solid 1px;
     margin: 0px 0px 10px 0px;
 }
@@ -135,9 +136,8 @@ body{
 .block>.content{
     font-size: 14px;
     margin-left: 12px;
-}
-.block>.content{
     position:relative;
+    min-height: 50px;
 }
 .drag-wrap {
         position: relative;
@@ -174,13 +174,13 @@ body{
     height: 200px;
     width: 100%;
     border: 3px dashed #bbb;
+    opacity: 0.3;
     border-color: gray;
         -moz-border-radius: 2px;
         -webkit-border-radius: 2px;
     border-radius: 1px;
     text-align: center;
     color: gray;
-    opacity: 0.3;
     filter: alpha(opacity=30);
     background-color: white;
     vertical-align: middle;
@@ -226,4 +226,42 @@ tr:hover{
 .block:hover>.abc{
     float:right;
     right: 0px;
+}
+.title>.add-tag{
+    position:absolute;
+    right: 0px;
+    height: 100%;
+    top: 0px;
+    transition: all 0.5s;
+}
+.add-tag:active{
+    right: 0px;
+}
+
+.draw_dv {position: relative;}
+.draw {
+    border: solid 1px #ccc;
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: 10;
+    margin-top :55px;
+    margin-left :20px;
+}
+.drawSave {
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: 5;
+    margin-top :55px;
+    margin-left :20px;
+}
+.mathIcon>li{
+	width:30px;
+	height:30px;
+	margin:5px;
+	background-image:url(/static/img/math.png);
+	background-repeat: no-repeat;
+	float:left;
+	list-style:none;
 }
