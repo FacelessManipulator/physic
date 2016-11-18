@@ -55,7 +55,7 @@ def send_mails_to(user_list, subject='', content='', type='text/html', from_emai
         return False
 
 
-def send_mail_to(user, subject='', content='', from_email='928835127@qq.com',):
+def send_mail_to(user, subject='', content='', from_email='physicsLab@126.com',):
     return send_mails_to([user], subject, content, from_email=from_email)
 
 
@@ -86,6 +86,17 @@ def send_password_modify_email(user):
         email_template_name = 'email/modify-password-email.html'
         mail_content = loader.get_template(email_template_name).render(context)
         send_mail_to(user=user, subject='密码更改提醒', content=mail_content)
+
+def send_report_push_back_email(report):
+    if report.user.is_email_active:
+        context = {
+            'nickname': report.user.name,
+            'name': report.experiment.base.name,
+            'reason': report.back_reason,
+        }
+        email_template_name = 'email/push-back.html'
+        mail_content = loader.get_template(email_template_name).render(context)
+        send_mail_to(user=report.user, subject='报告退回提醒', content=mail_content)
 
 
 def send_password_reset_email(user):

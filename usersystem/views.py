@@ -408,7 +408,8 @@ def modify_report(request):
                 report = Report.objects.get(rid=rid)
                 teacher = report.experiment.user.filter(group='teacher')[0]
                 if teacher.user.username != user.user.username \
-                        or not report.experiment.base.is_active:
+                        or not report.experiment.base.is_active\
+                        or not report.is_submit:
                     # TODO: 这里没有禁止修改未关闭实验报告成绩，是为了以后方便提前批改
                     return JsonResponse({'status': 501, 'msg': '权限不足'})
                 if grade is not None:
@@ -619,6 +620,8 @@ def submit_report(request):
         try:
             report = user.report.get(rid=rid)
             report.is_submit = True
+            report.is_corrected = False
+            report.total_grades = 0
             report.save()
         except Exception,e:
             return JsonResponse({'status': 501, 'msg': '非法的rid'})
@@ -635,11 +638,17 @@ def push_back_report(request):
         reason = request.POST.get('reason','')
         rid = request.POST.get('rid','')
         try:
-            report = Report.objects.get(rid = rid)
+            report = Report.objects.get(rid=rid)
             report.is_submit = False
+            report.total_grades = 0
+            report.is_corrected = False
             report.back_reason = reason
             report.save()
         except:
             return JsonResponse({'status': 503, 'msg': '不存在的rid'})
+        try:
+            utils.send_report_push_back_email(report)
+        except:
+            return JsonResponse({'status': 503, 'msg': '邮件发送失败'})
         return JsonResponse({'status':201})
     return JsonResponse({'status': 502, 'msg': '不支持的操作'})

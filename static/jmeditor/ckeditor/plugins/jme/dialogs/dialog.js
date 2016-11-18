@@ -3,10 +3,10 @@ var JME_TOP_VERSION = 0;
 var JME_VERSION_MSG = "";
 
  document.write(
- "<link href=\"" + JMEditor.jmeBasePath + "mathquill-0.9.1/mathquill.css\" rel=\"stylesheet\" type=\"text/css\" />" +
- "<script type=\"text/javascript\" src=\"" + JMEditor.jmeBasePath + "jquery-1.8.3.min.js\"></script>" +
-"<script type=\"text/javascript\" src=\"" + JMEditor.jmeBasePath + "mathquill-0.9.1/mathquill.min.js\"></script>" +
-"<script type=\"text/javascript\" src=\"" + JMEditor.jmeBasePath + "ckeditor/ckeditor.js\"></script>" +
+ "<link href=\"" + '/static/jmeditor/' + "mathquill-0.9.1/mathquill.css\" rel=\"stylesheet\" type=\"text/css\" />" +
+ "<script type=\"text/javascript\" src=\"" + '/static/jmeditor/'  + "jquery-1.8.3.min.js\"></script>" +
+"<script type=\"text/javascript\" src=\"" + '/static/jmeditor/'  + "mathquill-0.9.1/mathquill.min.js\"></script>" +
+"<script type=\"text/javascript\" src=\"" + '/static/jmeditor/'  + "ckeditor/ckeditor.js\"></script>" +
 "<script type=\"text/javascript\" src=\"http://www.jmeditor.com/jme/version.php\"></script>" +
 "<script type=\"text/javascript\">function callJmeInit(){if(window.jQuery){jmeInit();}else{setTimeout(callJmeInit,50);}} callJmeInit(); </script>");
 	var jmeMath = [

@@ -56,7 +56,7 @@
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
 <div ng-app="physiclab.admin" class="experiment-list-page container-fluid" ng-controller="adminCtrl" id="adminApp">
   <div class="row">
-    <div class="col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
+    <div class="col-xs-2 col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
       <div class="row" style="height:40px;">
         <button class="btn btn-default" style="width:100%;text-align:right;border-radius:0px">
           <i class="icon-reorder"></i>
@@ -76,7 +76,7 @@
         <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'website']" ng-click="changeToWebsite()">网站设置</button>
       </div>
     </div>
-    <div class="col-md-offset-2 col-md-10">
+    <div class="col-xs-offset-2 col-md-offset-2 col-xs-10 col-md-10">
       <div class="row address div-inverse" style="position:fixed;z-index:999;">
         <a href="javascript:;" id="ajax-state"></a>
         <div class="btn-group" style="position:fixed;right:2px;">
@@ -100,18 +100,18 @@
                   <div class="btn-group" style="float:right">
                     <button id="csvBtn2" class="btn btn-warning btn-sm" ngf-select="parse_csv($file,'teacher')" ngf-pattern="'.csv'" ng-show="user.loaded">导入csv</button>
                     <dialog ng-if="csvDialog.open['teacher']" for="csvBtn2" close="csvDialog.open['teacher']=false" close-action="esc outerchick">
-                        <div dialog-title>导入教师信息</div>
-                        <div dialog-content>
-                          待导入教师数量:<span>{%templatetag openvariable%}csvDialog.count{%templatetag closevariable%}</span><br>
-                          <table ng-if="csvDialog.count>0">
-                            <thead>样例:</thead>
-                            <th>账号</th><th>姓名</th>
-                            <tr>
+                      <div dialog-title>导入教师信息</div>
+                      <div dialog-content>
+                        待导入教师数量:<span>{%templatetag openvariable%}csvDialog.count{%templatetag closevariable%}</span><br>
+                        <table ng-if="csvDialog.count>0">
+                          <thead>样例:</thead>
+                          <th>账号</th><th>姓名</th>
+                          <tr>
                             <td>{%templatetag openvariable%}csvDialog.sample[0]{%templatetag closevariable%}</td>
                             <td>{%templatetag openvariable%}csvDialog.sample[1]{%templatetag closevariable%}</td>
-                            </tr>
-                          </table>
-                        </div>
+                          </tr>
+                        </table>
+                      </div>
                       <div dialog-buttons><button ng-click="csvDialog.confirm('teacher')" autofocus>导入</button><button ng-click="$close()">取消</button></div>
                     </dialog>
 
@@ -119,15 +119,17 @@
                       <div class="mod-popup-example">
                         成功导入{%templatetag openvariable%}csvDialog.successNum{%templatetag closevariable%}人<br>
                         失败{%templatetag openvariable%}csvDialog.failList.count(){%templatetag closevariable%}人<br>
-                        <table ng-if="csvDialog.failList.count()>0">
+                        <div style="max-height:400px;overflow-y:scroll;">
+                          <table ng-if="csvDialog.failList.count()>0">
                             <thead>导入失败:</thead>
                             <th>账号</th><th>姓名</th><th>原因</th>
                             <tr ng-repeat="fail in csvDialog.failList">
-                            <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                              <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
+                              <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
+                              <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
                             </tr>
                           </table>
+                        </div>
                       </div>
                     </popup>
                     <button class="btn btn-success btn-sm" ng-if="user.loaded" ng-click="exportExcel('teacher-grid')">导出Excel</button>
@@ -151,18 +153,18 @@
 
                     <button id="csvBtn" class="btn btn-warning btn-sm" ngf-select="parse_csv($file,'student')"  ngf-pattern="'.csv'" ng-show="user.loaded">导入csv</button>
                     <dialog ng-if="csvDialog.open['student']" for="csvBtn" close="csvDialog.open['student']=false" close-action="esc outerchick">
-                        <div dialog-title>导入学生信息</div>
-                        <div dialog-content>
-                          待导入学生数量:<span>{%templatetag openvariable%}csvDialog.count{%templatetag closevariable%}</span><br>
-                          <table ng-if="csvDialog.count>0">
-                            <thead>样例:</thead>
-                            <th>学号</th><th>姓名</th>
-                            <tr>
+                      <div dialog-title>导入学生信息</div>
+                      <div dialog-content>
+                        待导入学生数量:<span>{%templatetag openvariable%}csvDialog.count{%templatetag closevariable%}</span><br>
+                        <table ng-if="csvDialog.count>0">
+                          <thead>样例:</thead>
+                          <th>学号</th><th>姓名</th>
+                          <tr>
                             <td>{%templatetag openvariable%}csvDialog.sample[0]{%templatetag closevariable%}</td>
                             <td>{%templatetag openvariable%}csvDialog.sample[1]{%templatetag closevariable%}</td>
-                            </tr>
-                          </table>
-                        </div>
+                          </tr>
+                        </table>
+                      </div>
                       <div dialog-buttons><button ng-click="csvDialog.confirm('student')" autofocus>导入</button><button ng-click="$close()">取消</button></div>
                     </dialog>
 
@@ -170,15 +172,17 @@
                       <div class="mod-popup-example">
                         成功导入{%templatetag openvariable%}csvDialog.successNum{%templatetag closevariable%}人<br>
                         失败{%templatetag openvariable%}csvDialog.failList.count(){%templatetag closevariable%}人
-                        <table ng-if="csvDialog.failList.count()>0">
+                        <div style="max-height:400px;overflow-y:scroll;">
+                          <table ng-if="csvDialog.failList.count()>0">
                             <thead>导入失败:</thead>
                             <th>学号</th><th>姓名</th><th>原因</th>
                             <tr ng-repeat="fail in csvDialog.failList">
-                            <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                              <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
+                              <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
+                              <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
                             </tr>
                           </table>
+                        </div>
                       </div>
                     </popup>
                     <button class="btn btn-success btn-sm" ng-if="user.loaded" ng-click="exportExcel('student-grid')">导出Excel</button>
@@ -199,9 +203,48 @@
                 <div class="title">
                   <span>实验列表</span>
                   <div class="btn-group" style="float:right">
+                    <button id="csvBtn4" class="btn btn-warning btn-sm" ngf-select="parse_csv_experiment_import($file)" ngf-pattern="'.csv'">导入csv</button>
                     <button class="btn btn-success btn-sm" ng-if="experiment.loaded" ng-click="exportExcel2('experiment-grid')">导出Excel</button>
                     <button class="btn btn-info btn-sm" ng-if="experiment.loaded" ng-click="freshData(experiment,changeToExperimentList)">刷新</button>
                   </div>
+                  <dialog ng-if="ExperimentImportCsvDialog.open" for="csvBtn4" close="ExperimentImportCsvDialog.open=false" close-action="esc outerchick">
+                    <div dialog-title>导入实验信息</div>
+                    <div dialog-content>
+                      待导入实验数量:<span>{%templatetag openvariable%}ExperimentImportCsvDialog.count{%templatetag closevariable%}</span><br>
+                      <table ng-if="ExperimentImportCsvDialog.count>0" class="table">
+                        <thead>样例:</thead>
+                        <th>实验号</th><th>节次号</th><th>教师</th><th>日期</th><th>时间</th><th>教室</th>
+                        <tr>
+                          <td>{%templatetag openvariable%}ExperimentImportCsvDialog.sample[0]{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}ExperimentImportCsvDialog.sample[1]{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}ExperimentImportCsvDialog.sample[2]{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}ExperimentImportCsvDialog.sample[3]{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}ExperimentImportCsvDialog.sample[4]{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}ExperimentImportCsvDialog.sample[5]{%templatetag closevariable%}</td>
+                        </tr>
+                      </table>
+                    </div>
+                    <div dialog-buttons><button ng-click="ExperimentImportCsvDialog.confirm()" autofocus>导入</button><button ng-click="$close()">取消</button></div>
+                  </dialog>
+
+                  <popup ng-if="ExperimentImportCsvPopup.open" close="ExperimentImportCsvPopup.open=false;ExperimentImportCsvDialog.clear();" close-action="esc outerchick">
+                    <div class="mod-popup-example" >
+                      成功导入{%templatetag openvariable%}ExperimentImportCsvDialog.successNum{%templatetag closevariable%}人<br>
+                      失败{%templatetag openvariable%}ExperimentImportCsvDialog.failList.count(){%templatetag closevariable%}人<br>
+                      <div style="max-height:400px;overflow-y:scroll;">
+                        <table ng-if="ExperimentImportCsvDialog.failList.count()>0" class="table">
+                          <thead>导入失败:</thead>
+                          <th>实验号</th><th>节次号</th><th>原因</th>
+                          <tr ng-repeat="fail in ExperimentImportCsvDialog.failList">
+                            <td>{%templatetag openvariable%}fail.b_title{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.title{%templatetag closevariable%}</td>
+                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                          </tr>
+                        </table>
+
+                      </div>
+                    </div>
+                  </popup>
 
 
                 </div>
@@ -219,7 +262,12 @@
               <div class="row block" style="padding-bottom:0px;">
                 <form ng-submit="search_teacher()">
                   <div class="form-group">
-                    <input name="uid" type="text" class="form-control" id="uid" placeholder="请输入账号" ng-model="search_teacher_uid"/>
+                    <div class="input-group">
+                      <input class="form-control" name="uid" id="uid" type="search" ng-model="search_teacher_uid" placeholder="请输入账号">
+                      <span class="input-group-btn">
+                        <button class="btn"><span class="fui-search" onclick="search_teacher()"></span></button>
+                      </span>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -241,7 +289,7 @@
                 <div class="col-md-3">
                   <div class="row block">
                     <div class="title">基本信息
-                    <button class="btn btn-danger btn-xs" style="float:right" ng-click="resetPassword(search_result.username)">重置密码</button>
+                      <button class="btn btn-danger btn-xs" style="float:right" ng-click="resetPassword(search_result.username)">重置密码</button>
                     </div>
                     <div class="head-img-div">
                       <img id="teacher-head-img" src="/static/images/head-img-default.jpg" class="img-circle"/>
@@ -283,8 +331,14 @@
             <div class="col-md-12">
               <div class="row block" style="padding-bottom:0px;">
                 <form ng-submit="search_student()">
+
                   <div class="form-group">
-                    <input name="uid" type="text" class="form-control" placeholder="请输入账号" ng-model="search_student_uid"/>
+                    <div class="input-group">
+                      <input class="form-control" name="uid" type="search" ng-model="search_student_uid" placeholder="请输入账号">
+                      <span class="input-group-btn">
+                        <button class="btn"><span class="fui-search" onclick="search_student()"></span></button>
+                      </span>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -316,7 +370,7 @@
                 <div class="col-md-3">
                   <div class="row block">
                     <div class="title">基本信息
-                    <button class="btn btn-danger btn-xs" style="float:right" ng-click="resetPassword(search_result.username)">重置密码</button>
+                      <button class="btn btn-danger btn-xs" style="float:right" ng-click="resetPassword(search_result.username)">重置密码</button>
                     </div>
                     <div class="head-img-div">
                       <img id="student-head-img" src="/static/images/head-img-default.jpg" class="img-circle"/>
@@ -353,8 +407,13 @@
           <div class="row block" style="padding-bottom:0px;">
             <form ng-submit="changeToExperiment()">
               <div class="form-group">
-                <input name="eid" type="text" class="form-control" placeholder="请输入账号" ng-model="search_experiment_eid"/>
-              </div>
+                    <div class="input-group">
+                      <input class="form-control" name="eid" type="search" ng-model="search_experiment_eid" placeholder="请输入实验号">
+                      <span class="input-group-btn">
+                        <button class="btn"><span class="fui-search" onclick="changeToExperiment()"></span></button>
+                      </span>
+                    </div>
+                  </div>
             </form>
           </div>
           <div class="row" ng-show="selected_experiment.loaded">
@@ -369,45 +428,74 @@
                   </div>
                 </div>
                 <dialog ng-if="ExperimentCsvDialog.open" for="experiment-csv" close="ExperimentCsvDialog.open=false" close-action="esc outerchick">
-                        <div dialog-title>导入教师信息</div>
-                        <div dialog-content>
-                          待导入学生数量:<span>{%templatetag openvariable%}ExperimentCsvDialog.count{%templatetag closevariable%}</span><br>
-                          <table ng-if="ExperimentCsvDialog.count>0">
-                            <thead>样例:</thead>
-                            <th>账号</th><th>姓名</th>
-                            <tr>
-                            <td>{%templatetag openvariable%}ExperimentCsvDialog.sample[0]{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}ExperimentCsvDialog.sample[1]{%templatetag closevariable%}</td>
-                            </tr>
-                          </table>
-                        </div>
-                      <div dialog-buttons><button ng-click="ExperimentCsvDialog.confirm(ExperimentCsvDialog.cur_eid)" autofocus>导入</button><button ng-click="$close()">取消</button></div>
-                    </dialog>
+                  <div dialog-title>导入教师信息</div>
+                  <div dialog-content>
+                    待导入学生数量:<span>{%templatetag openvariable%}ExperimentCsvDialog.count{%templatetag closevariable%}</span><br>
+                    <table ng-if="ExperimentCsvDialog.count>0">
+                      <thead>样例:</thead>
+                      <th>账号</th><th>姓名</th>
+                      <tr>
+                        <td>{%templatetag openvariable%}ExperimentCsvDialog.sample[0]{%templatetag closevariable%}</td>
+                        <td>{%templatetag openvariable%}ExperimentCsvDialog.sample[1]{%templatetag closevariable%}</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div dialog-buttons><button ng-click="ExperimentCsvDialog.confirm(ExperimentCsvDialog.cur_eid)" autofocus>导入</button><button ng-click="$close()">取消</button></div>
+                </dialog>
 
-                    <popup ng-if="ExperimentCsvPopup.open" close="ExperimentCsvPopup.open=false;ExperimentCsvDialog.clear();" close-action="esc outerchick">
-                      <div class="mod-popup-example">
-                        成功导入{%templatetag openvariable%}ExperimentCsvDialog.successNum{%templatetag closevariable%}人<br>
-                        失败{%templatetag openvariable%}ExperimentCsvDialog.failList.count(){%templatetag closevariable%}人<br>
-                        <table ng-if="ExperimentCsvDialog.failList.count()>0">
-                            <thead>导入失败:</thead>
-                            <th>账号</th><th>姓名</th><th>原因</th>
-                            <tr ng-repeat="fail in ExperimentCsvDialog.failList">
-                            <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
-                            <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
-                            </tr>
-                          </table>
-                      </div>
-                    </popup>
+                <popup ng-if="ExperimentCsvPopup.open" close="ExperimentCsvPopup.open=false;ExperimentCsvDialog.clear();" close-action="esc outerchick">
+                  <div class="mod-popup-example">
+                    成功导入{%templatetag openvariable%}ExperimentCsvDialog.successNum{%templatetag closevariable%}人<br>
+                    失败{%templatetag openvariable%}ExperimentCsvDialog.failList.count(){%templatetag closevariable%}人<br>
+                    <div style="max-height:400px;overflow-y:scroll;">
+                      <table ng-if="ExperimentCsvDialog.failList.count()>0">
+                        <thead>导入失败:</thead>
+                        <th>账号</th><th>姓名</th><th>原因</th>
+                        <tr ng-repeat="fail in ExperimentCsvDialog.failList">
+                          <td>{%templatetag openvariable%}fail.username{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}fail.name{%templatetag closevariable%}</td>
+                          <td>{%templatetag openvariable%}fail.msg{%templatetag closevariable%}</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </popup>
                 <div id="report-grid"></div>
               </div>
             </div>
             <div class="col-md-3">
 
-              <div class="row block">
+              <div class="row block" ng-show="selected_experiment.content.reports.length>0">
                 <div class="title">实验报告完成情况</div>
                 <div id="report_state_chart"></div>
               </div>
+
+              <div class="row block" ng-show="selected_experiment.content.teacher_name">
+                <div class="title">教师信息</div>
+                    <div class="head-img-div">
+                      <img id="teacher-head-img-2" ng-src="{%templatetag openvariable%}selected_experiment.content.teacher.photo{%templatetag closevariable%}" class="img-circle"/>
+                    </div>
+                    <table align="left" style="width:100%">
+                      <tbody>
+                      <tr>
+                        <td style="width:35%;"><span class="span-title">姓名:</span></td>
+                        <td  style="width:65%;"><span ng-bind-html="selected_experiment.content.teacher.name"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">账号:</span></td>
+                        <td><span ng-bind-html="selected_experiment.content.teacher.username"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">邮箱:</span></td>
+                        <td><span ng-bind-html="selected_experiment.content.teacher.email"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="span-title">电话:</span></td>
+                        <td><span ng-bind-html="selected_experiment.content.teacher.phone"></span></td>
+                      </tr>
+                      </tbody>
+                    </table>
+                </div>
 
               <div class="row block">
                 <div class="title">实验信息</div>
@@ -493,7 +581,7 @@
                               class="bootstrap"
                   >
                   </tags-input>
-               </div>
+                </div>
                 <div class="form-group">
                   <label>学院</label>
                   <tags-input ng-model="website_setting.content.institute"
@@ -535,7 +623,7 @@
                               class="bootstrap"
                   >
                   </tags-input>
-               </div>
+                </div>
               </form>
             </div>
           </div>

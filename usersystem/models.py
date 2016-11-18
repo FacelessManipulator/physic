@@ -44,11 +44,16 @@ class WebsiteConfig(models.Model):
     show_extra_block = models.BooleanField(default=True)
 
     def get_weekdays(self, date):
+        if isinstance(date, (unicode,str)):
+            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         delta = (date - self.start_week_day).days
         return "第%d周/%s"% (delta//7 + 1, self.weekday[delta % 7])
 
     def get_end_date(self, date):
+        if isinstance(date, (unicode,str)):
+            date = datetime.datetime.strptime(date, "%Y-%m-%d")
         end_date = date + datetime.timedelta(self.report_editing_day)
+
         return str(end_date)
 
     def get_dict(self):
@@ -142,6 +147,7 @@ class UserBaseInfo(models.Model):
 
     def get_dict(self, simple=True):
         dic = {}
+        #TODO: 这里可能有安全隐患,后期应避免向学生返回教师的username
         dic['username'] = self.user.username
         dic['email'] = self.user.email
         dic['name'] = self.name

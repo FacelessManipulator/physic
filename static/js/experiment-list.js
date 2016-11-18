@@ -32,6 +32,8 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     $scope.selected_report = {'loaded':false, 'content':{}};
     $scope.experiment = {'name':'experiment', 'loaded':false, 'url':'experiment/base/all','content':[]};
     $scope.addExperimentDialog = {open:false};
+    $scope.drag_hide = {data_processing: true, instrument: true,thinking: true,process: true,
+            principle: true,objective: true}
     $scope.deleteDialog = {};
     function removeElement(_element){
          var _parentElement = _element.parentNode;
@@ -193,6 +195,7 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             rendered: function (evt, ui) {
                 $('<link href="/static/jmeditor/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />').appendTo($(ui.owner.workspace).contents().find("head"));
                 $(ui.owner.workspace).contents().find("body").attr("style","padding-bottom:200px;");
+                $("[id$='ObjectToolbar_item_image']").remove();
             },
             customToolbars: [
                 {
@@ -445,6 +448,7 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             $("#"+$scope.editing_block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
         }
     };
+
     $scope.showHideCalendar = function(){
         if($scope.calendar_hidden){
             $scope.calendar_hidden = false;
@@ -464,20 +468,20 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     };
 
     $scope.changeExperiment = function(event, ui){
-        $scope.addExperimentDialog.classroom_set = $scope.filterFromArray($scope.experiment.content,['b_title'],[ui.items[0].data.b_title]);
+        $scope.addExperimentDialog.teacher_set = $scope.filterFromArray($scope.experiment.content,['b_title'],[ui.items[0].data.b_title]);
 
-        $("#classroom-combo").igCombo('option', 'dataSource', $scope.grab_unique($scope.addExperimentDialog.classroom_set,'classroom'));
-        $("#classroom-combo").igCombo('dataBind');
+        $("#teacher-combo").igCombo('option', 'dataSource', $scope.grab_unique($scope.addExperimentDialog.teacher_set,'teacher_name'));
+        $("#teacher-combo").igCombo('dataBind');
 
-        if($scope.addExperimentDialog.classroom_set.length>0){
-            $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.classroom_set ,
-                ['classroom'],[$scope.addExperimentDialog.classroom_set[0].classroom]);
+        if($scope.addExperimentDialog.teacher_set.length>0){
+            $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.teacher_set ,
+                ['teacher_name'],[$scope.addExperimentDialog.teacher_set[0].teacher_name]);
             $("#time-combo").igCombo('option', 'dataSource',$scope.addExperimentDialog.time_set);
             $("#time-combo").igCombo('dataBind');
         }
     };
-    $scope.changeClassroom = function(event, ui){
-        $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.classroom_set , ['classroom'],[ui.items[0].data.classroom]);
+    $scope.changeTeacher = function(event, ui){
+        $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.teacher_set , ['teacher_name'],[ui.items[0].data.teacher_name]);
         $("#time-combo").igCombo('option', 'dataSource', $scope.addExperimentDialog.time_set);
         $("#time-combo").igCombo('dataBind');
     };
@@ -486,9 +490,9 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     };
     $scope.renderAddDialog = function(){
              $scope.addExperimentDialog.eid = $scope.experiment.content[0].eid;
-            $scope.addExperimentDialog.classroom_set = $scope.filterFromArray($scope.experiment.content,['b_title'],[$scope.experiment.content[0].b_title]);
-            $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.classroom_set,
-                ['classroom'],[$scope.addExperimentDialog.classroom_set[0].classroom]);
+            $scope.addExperimentDialog.teacher_set = $scope.filterFromArray($scope.experiment.content,['b_title'],[$scope.experiment.content[0].b_title]);
+            $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.teacher_set,
+                ['teacher_name'],[$scope.addExperimentDialog.teacher_set[0].teacher_name]);
 
             $("#exp-combo").igCombo({
                 mode:"dropdown",
@@ -504,15 +508,15 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                 //],
                 width: "100%"
             });
-            $("#classroom-combo").igCombo({
+            $("#teacher-combo").igCombo({
                 mode:"dropdown",
-                dataSource: $scope.grab_unique($scope.addExperimentDialog.classroom_set),
+                dataSource: $scope.grab_unique($scope.addExperimentDialog.teacher_set),
                 valueKeyType:"string",
-                valueKey:"classroom",
+                valueKey:"teacher_name",
                 textKeyType:"string",
-                textKey:"classroom",
+                textKey:"teacher_name",
                 enableClearButton:false,
-                selectionChanged: $scope.changeClassroom,
+                selectionChanged: $scope.changeTeacher,
                 //initialSelectedItems : [
                 //  { value: $scope.selected_major.mid },
                 //],
