@@ -1,7 +1,7 @@
 'use strict';
 
 var experimentListApp = angular.module('physiclab.experimentList',
-        ['angular-popups','physiclab.directives','ngSanitize', 'igniteui-directives','ngFileUpload','ui.calendar', ]);
+        ['angular-popups','physiclab.directives','ngSanitize', 'igniteui-directives','ngFileUpload','ui.calendar','ui.bootstrap' ]);
 experimentListApp.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -245,7 +245,7 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                 },100);
             },
             rendered: function (evt, ui) {
-                $('<link href="/static/jmeditor/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />').appendTo($(ui.owner.workspace).contents().find("head"));
+                $('<link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />').appendTo($(ui.owner.workspace).contents().find("head"));
                 $(ui.owner.workspace).contents().find("body").attr("style","padding-bottom:200px;");
             },
             showCopyPasteToolbar: false,
@@ -294,7 +294,9 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     };
     $scope.open_math_dialog = function(ui){
     //强制刷新，否则dialog出不来
-        $("#math-dialog-editor").mathquill('write', "");
+
+		$("#dialog-editor").mathquill('revert');
+		$("#dialog-editor").html("").mathquill('editable').mathquill('write', "");
         $scope.$apply(function(){$scope.mathDialog.open = true});
     };
     $scope.uploadImages = function(block, files){
@@ -358,7 +360,7 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     $scope.insert_image = function(block, url){
         var span = document.createElement('span'),editorContent = $("#"+block+"_editor").igHtmlEditor("getContent", "html");
         span.innerHTML = ['<img style="border: 1px solid #000;margin: 10px 5px 0 0;max-width: 100%;" src="',url,'" />'].join('');
-        $("#"+block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
+        $("#"+block+"_editor").igHtmlEditor("insertAtCaret", $(span).html());
     };
     $scope.render_tags = function(){
         var olds = $(".tooltip");
@@ -381,7 +383,8 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]);
         }
         $("#teacher-head-img").attr('src',$scope.selected_report.content.teacher_photo);
-        $scope.render_tags();
+        if($scope.selected_report.closed&&$scope.selected_report.is_submit&&$scope.selected_report.is_corrected)
+            $scope.render_tags();
     };
     $scope.changeReport = function(rid){
         if(!$scope.reports.loaded){
@@ -427,15 +430,30 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
         });
         $scope.events.splice(0, $scope.events.length);
         for(var i=0;i< $scope.reports.content.length;i++){
+            var _class = "";
+            var report = $scope.reports.content[i];
+            if(report.closed&&!report.is_submit){
+                _class = "event-danger";
+            }
+            else if(!report.is_submit){
+                _class= "event-warning";
+            }
+            else if(report.is_submit&&!report.is_corrected){
+                _class= "event-success";
+            }
+            else{
+                _class= "event-info";
+            }
             $scope.events.push({title:"实验名:"+$scope.reports.content[i].experiment.base.name+"/教室:"+$scope.reports.content[i].experiment.classroom,
                                start:new Date($scope.reports.content[i].experiment.date),
                                 end:new Date($scope.reports.content[i].experiment.end_date),
                                 rid:$scope.reports.content[i].rid,
                                 allDay:true,
                                 stick: true,
+                                className: _class
                                 });
         }
-        $("#math_editor_dialog").igDialog({height:463,width:410,state:"closed"});
+        console.log(uiCalendarConfig.calendars.calendar);
     };
     $scope.changeAll = function(){
         $scope.freshData('/user/report',$scope.reports, $scope.render_all);
@@ -449,7 +467,8 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
         if($scope.editing_block != ''){
             var span = document.createElement('span'),editorContent = $("#"+$scope.editing_block+"_editor").igHtmlEditor("getContent", "html");
             span.innerHTML = ['<span style="padding: 2px;border:0px;" class="mathquill-rendered-math">',content,'</span><span>&nbsp</span>'].join('');
-            $("#"+$scope.editing_block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
+            $("#"+$scope.editing_block+"_editor").igHtmlEditor("insertAtCaret", $(span).html());
+//            $("#"+$scope.editing_block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
         }
     };
 
@@ -463,6 +482,12 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     }
     $scope.alertOnEventClick = function(date, jsEvent, view){
         $scope.changeReport(date.rid);
+    };
+    $scope.alertOnEventRender = function( event, element, view ) {
+        element.attr({'tooltip': event.title,
+                     'tooltip-append-to-body': true});
+        element.attr({'class': event.className+" fc-day-grid-event fc-event fc-start fc-end fc-draggable"});
+        $compile(element)($scope);
     };
     $scope.submit = function(){
         $scope.modifyData('/user/submit',{'rid':$scope.selected_report.rid});
@@ -562,10 +587,11 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
           right: 'today prev,next'
         },
         eventClick: $scope.alertOnEventClick,
+        eventRender: $scope.alertOnEventRender,
       }
     };
 
-    $scope.eventSources = [$scope.events];
+    $scope.eventSources = [{events:$scope.events}];
     $scope.freshData($scope.experiment.url,$scope.experiment,$scope.renderAddDialog);
     $scope.changeAll();
 });

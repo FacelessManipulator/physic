@@ -126,7 +126,7 @@ body{
     margin: 0px 0px 10px 0px;
 }
 .ui-sigma{
-    background-image: url('/static/jmeditor/ckeditor/plugins/jme/icons/jme.png')!important;
+    background-image: url('/static/img/icons/jme.png')!important;
     background-position: 0 0px;
 }
 .block>p{
@@ -264,4 +264,24 @@ tr:hover{
 	background-repeat: no-repeat;
 	float:left;
 	list-style:none;
+}
+.event-danger{
+    background-color: #e74c3c;
+    border-color: white;
+    color: white;
+}
+.event-success{
+    background-color: #2ecc71;
+    border-color: white;
+    color: white;
+}
+.event-warning{
+    background-color: #f1c40f;
+    border-color: white;
+    color: white;
+}
+.event-info{
+    background-color: #3498db;
+    border-color: white;
+    color: white;
 }

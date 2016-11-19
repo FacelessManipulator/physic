@@ -61,5 +61,7 @@ function mathDialogInit(id){
 				des: id
 		}));
 		//公式编辑框
+		//重新初始化,先revert，否则会有bug
+		$("#"+id+"-editor").mathquill('revert');
 		$("#"+id+"-editor").html("").mathquill('editable').mathquill('write', "");
 }
