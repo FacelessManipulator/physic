@@ -188,6 +188,29 @@ body{
     box-sizing: border-box;
     padding-top: 70px;
 }
+.drop-box-in{
+    cursor: pointer;
+    top: 0;
+    position: absolute;
+    left: 1%;
+    height: 97%;
+    width: 96%;
+    border: 3px dashed #bbb;
+    opacity: 0.3;
+    border-color: gray;
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+    border-radius: 1px;
+    line-height: 10em;
+    text-align: center;
+    color: gray;
+    filter: alpha(opacity=30);
+    background-color: white;
+    vertical-align: middle;
+    font-size: 30px;
+    box-sizing: border-box;
+    padding-top: 70px;
+}
 table{
     width: 100%;
     margin-bottom: 20px;

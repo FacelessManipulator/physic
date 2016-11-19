@@ -136,6 +136,7 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                 $('#error').html("<i style='color:red;margin-right:15px;' class='icon-warning-sign'></i>连接超时,请刷新后在试");
             });
     };
+
     $scope.generateReportGrid = function(id, data){
         $("#" + id + "-grid").igGrid({
             primaryKey: "rid",
@@ -198,6 +199,10 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                 $(ui.owner.workspace).contents().find("body").attr("style","padding-bottom:200px;");
                 $("[id$='ObjectToolbar_item_image']").remove();
                 mathDialogInit('math-dialog');
+                $(ui.owner.workspace).contents().find("body").on({
+                    "dragenter": $scope.handleDragEnter,
+                    "dragleave": $scope.handleDragLeave
+                });
             },
             customToolbars: [
                 {
@@ -247,6 +252,12 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             rendered: function (evt, ui) {
                 $('<link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />').appendTo($(ui.owner.workspace).contents().find("head"));
                 $(ui.owner.workspace).contents().find("body").attr("style","padding-bottom:200px;");
+                $("[id$='ObjectToolbar_item_image']").remove();
+                mathDialogInit('math-dialog');
+                $(ui.owner.workspace).contents().find("body").on({
+                    "dragenter": $scope.handleDragEnter,
+                    "dragleave": $scope.handleDragLeave
+                });
             },
             showCopyPasteToolbar: false,
             showFormattingToolbar: false,
@@ -310,20 +321,22 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                         $("#"+block+"-image-upload-status").html("图片上传成功");
                         $scope.insert_image(block, resp.data.url);
                         $timeout(function(){
-                            $("#"+block+"-image-upload-status").html("拖拽图片至此添加");
+                            $("#"+$scope.editing_block+"-dropZone").remove();
                         },5000);
                     }
                     else{
                         $("#"+block+"-file-upload-status").html("文件上传失败");
                         $timeout(function(){
-                            $("#"+block+"-file-upload-status").html("拖拽文件至此添加");
+                            $("#"+$scope.editing_block+"-dropZone").remove();
                         },5000);
                     }
                 }, function (resp) {
                     $("#"+block+"-image-upload-status").html("图片上传失败:"+resp.status);
+                    $("#"+$scope.editing_block+"-dropZone").remove();
                 }, function (evt) {
                     var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
                     $("#"+block+"-image-upload-status").html('上传进度: ' + progressPercentage + '% ');
+                    $("#"+$scope.editing_block+"-dropZone").remove();
                 });
            }
       }
@@ -360,7 +373,13 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     $scope.insert_image = function(block, url){
         var span = document.createElement('span'),editorContent = $("#"+block+"_editor").igHtmlEditor("getContent", "html");
         span.innerHTML = ['<img style="border: 1px solid #000;margin: 10px 5px 0 0;max-width: 100%;" src="',url,'" />'].join('');
-        $("#"+block+"_editor").igHtmlEditor("insertAtCaret", $(span).html());
+        try{
+            $("#"+block+"_editor").igHtmlEditor("insertAtCaret", $(span).html());
+        }
+        catch(e){
+            $("#"+block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
+        }
+
     };
     $scope.render_tags = function(){
         var olds = $(".tooltip");
@@ -453,7 +472,6 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                                 className: _class
                                 });
         }
-        console.log(uiCalendarConfig.calendars.calendar);
     };
     $scope.changeAll = function(){
         $scope.freshData('/user/report',$scope.reports, $scope.render_all);
@@ -467,8 +485,12 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
         if($scope.editing_block != ''){
             var span = document.createElement('span'),editorContent = $("#"+$scope.editing_block+"_editor").igHtmlEditor("getContent", "html");
             span.innerHTML = ['<span style="padding: 2px;border:0px;" class="mathquill-rendered-math">',content,'</span><span>&nbsp</span>'].join('');
-            $("#"+$scope.editing_block+"_editor").igHtmlEditor("insertAtCaret", $(span).html());
-//            $("#"+$scope.editing_block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
+            try{
+                $("#"+$scope.editing_block+"_editor").igHtmlEditor("insertAtCaret", $(span).html());
+            }
+            catch(e){
+                $("#"+$scope.editing_block+"_editor").igHtmlEditor("setContent", editorContent + $(span).html(), "html");
+            }
         }
     };
 
@@ -572,6 +594,32 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     $scope.delete_class = function(eid){
         $scope.modifyData('/experiment/user/delete',{'eid':eid},undefined,undefined,$scope.changeAll);
     };
+    $scope.handleDragEnter = function (evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+
+            if ($("#"+$scope.editing_block+"-dropZone").length === 0) {
+                var html = "<div id=\""+$scope.editing_block+"-dropZone\" ngf-select=\"uploadImages('"+$scope.editing_block+"',$files)\" "+
+                 "ngf-drop=\"uploadImages('"+$scope.editing_block+"',$files)\" "+
+                 "ngf-multiple=\"true\" ngf-pattern=\"'image/*'\" "+
+                 "ngf-accept=\"'image/*'\" ngf-max-size=\"1MB\" ngf-min-height=\"100\" class=\"drop-box-in\"> "+
+                 "<span id=\"principle-image-upload-status\">拖拽图片至此添加</span></div>";
+
+                var content = $compile(html)($scope);
+                $("#"+$scope.editing_block+"_editor_content").append(content);
+                //TODO: 这里设置了5秒后自动消失，防止bug
+                $timeout(function(){
+                           $("#"+$scope.editing_block+"-dropZone").remove();
+                        },5000);
+            }
+    };
+    $scope.handleDragLeave = function (evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+
+            // remove the drop zone element
+            $("#"+$scope.editing_block+"-dropZone").remove();
+    }
 
     /* config object */
     $scope.uiConfig = {
