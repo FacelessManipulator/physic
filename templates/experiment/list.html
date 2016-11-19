@@ -27,6 +27,7 @@
 "angularjs/1.5/angular-sanitize.min.js,"+
 "angularjs/1.5/ng-file-upload-shim.min.js,"+
 "angularjs/1.5/ng-file-upload.min.js,"+
+"angularjs/1.5/ui-bootstrap-tpls-0.13.0.js,"+
 "js/angular-popups.js,"+
 "mathquill-0.9.1/mathquill.min.js,"+
 "bower_components/moment/min/moment.min.js,"+
@@ -124,7 +125,7 @@
                 </div>
                 <div class="content" id="raw_data_content" ng-show="editing_block !='raw_data'"></div>
                 <div id="raw_data_editor" ng-show="editing_block =='raw_data'"></div>
-                <div ngf-select="uploadImages('instrument',$files)" ngf-drop="uploadImages('raw_data',$files)" ng-show="editing_block =='raw_data'" ngf-multiple="true" ngf-pattern="'image/*'"
+                <div ngf-select="uploadImages('raw_data',$files)" ngf-drop="uploadImages('raw_data',$files)" ng-show="editing_block =='raw_data'" ngf-multiple="true" ngf-pattern="'image/*'"
                      ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">
                   <span id="raw_data-image-upload-status">拖拽图片至此添加</span>
                 </div>
