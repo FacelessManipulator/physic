@@ -65,7 +65,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             if(this.block != ''){
                 $scope.add_tag(this.block+'_content',this.grade, this.reason);
             }
-        }};
+        },reasonDropClosed:function(evt,ui){console.log(evt);console.log(ui);}};
     function removeElement(_element){
          var _parentElement = _element.parentNode;
          if(_parentElement){
@@ -854,7 +854,17 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
                                 className:_class,
                                 stick: true,
                                 });
+            $("#reason-editor").igCombo({
+            //TODO: 两次检测保证同步
+                 dropDownClosed: function (evt, ui) {
+                     $scope.$apply(function(){$scope.addTagDialog.reason = ui.owner.text();});
+                 },
+                 filtered: function (evt, ui) {
+                     $scope.$apply(function(){$scope.addTagDialog.reason = ui.owner.text();});
+                 },
+             });
         }
+
     };
     $scope.changeAll = function(){
         $scope.freshData('/experiment/all',$scope.experiments,$scope.render_all);

@@ -306,13 +306,14 @@
                                   <div class="form-group">
                                     <span style="display:block">原因:</span>
                                     <ig-combo
+                                            id="reason-editor"
                                             height="28"
                                             width="250"
                                             style="line-height:28px"
                                             allow-custom-value="true"
                                             auto-select-first-match="false"
-                                            filtering-condition="equals"
-                                            drop-down-width="200"
+                                            drop-down-closing="function(evt,ui){console.log(ui);}"
+                                            drop-down-width="250"
                                             data-source="tag_types"
                                             value-key-type="string"
                                             value-key="key"
