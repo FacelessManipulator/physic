@@ -197,7 +197,6 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             rendered: function (evt, ui) {
                 $('<link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />').appendTo($(ui.owner.workspace).contents().find("head"));
                 $(ui.owner.workspace).contents().find("body").attr("style","padding-bottom:200px;");
-                $("[id$='ObjectToolbar_item_image']").remove();
                 mathDialogInit('math-dialog');
                 $(ui.owner.workspace).contents().find("body").on({
                     "dragenter": $scope.handleDragEnter,
@@ -252,7 +251,6 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             rendered: function (evt, ui) {
                 $('<link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />').appendTo($(ui.owner.workspace).contents().find("head"));
                 $(ui.owner.workspace).contents().find("body").attr("style","padding-bottom:200px;");
-                $("[id$='ObjectToolbar_item_image']").remove();
                 mathDialogInit('math-dialog');
                 $(ui.owner.workspace).contents().find("body").on({
                     "dragenter": $scope.handleDragEnter,
