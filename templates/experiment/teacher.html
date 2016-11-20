@@ -1,8 +1,9 @@
 {% extends "base.html"%}
 {% block css %}
-<link href="/static/jmeditor/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
+<link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="/static/bower_components/fullcalendar/dist/fullcalendar.css"/>
 <link href="/static/css/experiment-list.css" rel="stylesheet"/>
+<link href="/static/angularjs/1.5/angular-awesome-slider.min.css" rel="stylesheet"/>
 {% endblock%}
 {% block script %}
 <script src="/static/angularjs/1.5/angular-sanitize.min.js"></script>
@@ -37,6 +38,8 @@
 {% block js %}
 "angularjs/1.5/angular-sanitize.min.js,"+
 "angularjs/1.5/angular-drag.js,"+
+"angularjs/1.5/angular-awesome-slider.min.js,"+
+"angularjs/1.5/ui-bootstrap-tpls-0.13.0.js,"+
 "js/angular-popups.js,"+
 "igniteUI/js/infragistics.dv.js,"+
 "igniteUI/js/modules/infragistics.documents.core.js,"+
@@ -281,34 +284,43 @@
                             <dialog ng-show="addTagDialog.open" close="addTagDialog.open=false" close-action="esc">
                                 <div dialog-title>添加扣分标签</div>
                                 <div dialog-content>
-                                  <div class="form-group">
-                                    <label>扣分</label>
-                                    <ig-numeric-editor
-                                                spin-delta="1"
-                                                data-mode="int"
-                                                height= "32"
-                                                width="28" style="line-height:28px"
-                                                min-value= "0"
-                                                max-value= "10"
-                                                ng-model="addTagDialog.grade"
-                                                text-align= "center">
+                                    <div class="form-group">
+                                        <span>扣</span>
+                                        <ig-numeric-editor
+                                            spin-delta="1"
+                                            data-mode="int"
+                                            height= "32"
+                                            width="28" style="line-height:28px;float:right;"
+                                            min-value= "0"
+                                            max-value= "10"
+                                            ng-model="addTagDialog.grade"
+                                            text-align= "center">
                                         </ig-numeric-editor>
+                                        <span>分:</span><span ng-bind-html="addTagDialog.reason"></span>
+                                    </div>
+                                  <div class="form-group">
+                                    <label for="mySlider1">扣分:</label>
+                                      <input ng-model="addTagDialog.grade"  type="number" id="mySlider1" slider options="gradeSliderOption" />
                                   </div>
 
                                   <div class="form-group">
-                                    <label for="reason-tag">原因</label>
+                                    <span style="display:block">原因:</span>
                                     <ig-combo
-                                                height="28"
-                                                width="28" style="line-height:28px"
-                                                drop-down-width="200"
-                                                data-source="tag_types"
-                                                value-key-type="string"
-                                                value-key="key"
-                                                text-key-type="string"
-                                                text-key="value"
-                                                enable-clear-button="false"
-                                                ng-model="addTagDialog.reason" class="tag_combo"></ig-combo>
-                                        <input id="reason-tag" style="font-size:19px;height:29px;" type="text"   ng-model="addTagDialog.reason"/>
+                                            height="28"
+                                            width="250"
+                                            style="line-height:28px"
+                                            allow-custom-value="true"
+                                            auto-select-first-match="false"
+                                            filtering-condition="equals"
+                                            drop-down-width="200"
+                                            data-source="tag_types"
+                                            value-key-type="string"
+                                            value-key="key"
+                                            text-key-type="string"
+                                            text-key="value"
+                                            enable-clear-button="true"
+                                            ng-model="addTagDialog.reason" class="tag_combo"></ig-combo>
+                                      <!--<input id="reason-tag" style="font-size:19px;height:29px;" type="text" ng-model="addTagDialog.reason"/>-->
                                   </div>
                                 </div>
                                 <div dialog-buttons><button ng-click="addTagDialog.add_tag();$close();" autofocus>添加</button><button ng-click="$close()">取消</button></div>
@@ -317,30 +329,6 @@
                                 <div class="title">
                                     <span>数据处理</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">
-                                        <!--<span>扣</span>-->
-                                        <!--<ig-numeric-editor-->
-                                                <!--spin-delta="1"-->
-                                                <!--data-mode="int"-->
-                                                <!--height= "32"-->
-                                                <!--width="28" style="line-height:28px"-->
-                                                <!--min-value= "0"-->
-                                                <!--max-value= "10"-->
-                                                <!--ng-model="tag_grade['data_processing_content']"-->
-                                                <!--text-align= "center">-->
-                                        <!--</ig-numeric-editor>-->
-                                        <!--<span>分:</span>-->
-                                        <!--<ig-combo-->
-                                                <!--height="28"-->
-                                                <!--width="28" style="line-height:28px"-->
-                                                <!--drop-down-width="200"-->
-                                                <!--data-source="tag_types"-->
-                                                <!--value-key-type="string"-->
-                                                <!--value-key="key"-->
-                                                <!--text-key-type="string"-->
-                                                <!--text-key="value"-->
-                                                <!--enable-clear-button="false"-->
-                                                <!--ng-model="tag_reason['data_processing_content']" class="tag_combo"></ig-combo>-->
-                                        <!--<input  style="font-size:19px;height:29px;" type="text"   ng-model="tag_reason['data_processing_content']"/>-->
 
                                         <button class="btn btn-info btn-sm" ng-click="addTagDialog.clear('data_processing');addTagDialog.open=true;">添加标签</button>
                                     </div>
@@ -353,30 +341,6 @@
                                 <div class="title">
                                     <span>实验体会</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">
-                                        <!--<span>扣</span>-->
-                                        <!--<ig-numeric-editor-->
-                                                <!--spin-delta="1"-->
-                                                <!--data-mode="int"-->
-                                                <!--height= "32"-->
-                                                <!--width="28" style="line-height:28px"-->
-                                                <!--min-value= "0"-->
-                                                <!--max-value= "10"-->
-                                                <!--ng-model="tag_grade['instrument_content']"-->
-                                                <!--text-align= "center">-->
-                                        <!--</ig-numeric-editor>-->
-                                        <!--<span>分:</span>-->
-                                        <!--<ig-combo-->
-                                                <!--height="28"-->
-                                                <!--width="28" style="line-height:28px"-->
-                                                <!--drop-down-width="200"-->
-                                                <!--data-source="tag_types"-->
-                                                <!--value-key-type="string"-->
-                                                <!--value-key="key"-->
-                                                <!--text-key-type="string"-->
-                                                <!--text-key="value"-->
-                                                <!--enable-clear-button="false"-->
-                                                <!--ng-model="tag_reason['instrument_content']" class="tag_combo"></ig-combo>-->
-                                        <!--<input  style="font-size:19px;height:29px;" type="text"   ng-model="tag_reason['instrument_content']"/>-->
 
                                         <button class="btn btn-info btn-sm" ng-click="addTagDialog.clear('instrument');addTagDialog.open=true;">添加标签</button>
                                     </div>
@@ -385,35 +349,10 @@
                             </div>
 
 
-
                             <div class="row block">
                                 <div class="title">
                                     <span>思考题</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">
-                                        <!--<span>扣</span>-->
-                                        <!--<ig-numeric-editor-->
-                                                <!--spin-delta="1"-->
-                                                <!--data-mode="int"-->
-                                                <!--height= "32"-->
-                                                <!--width="28" style="line-height:28px"-->
-                                                <!--min-value= "0"-->
-                                                <!--max-value= "10"-->
-                                                <!--ng-model="tag_grade['thinking_content']"-->
-                                                <!--text-align= "center">-->
-                                        <!--</ig-numeric-editor>-->
-                                        <!--<span>分:</span>-->
-                                        <!--<ig-combo-->
-                                                <!--height="28"-->
-                                                <!--width="28" style="line-height:28px"-->
-                                                <!--drop-down-width="200"-->
-                                                <!--data-source="tag_types"-->
-                                                <!--value-key-type="string"-->
-                                                <!--value-key="key"-->
-                                                <!--text-key-type="string"-->
-                                                <!--text-key="value"-->
-                                                <!--enable-clear-button="false"-->
-                                                <!--ng-model="tag_reason['thinking_content']" class="tag_combo"></ig-combo>-->
-                                        <!--<input  style="font-size:19px;height:29px;" type="text"   ng-model="tag_reason['thinking_content']"/>-->
 
                                         <button class="btn btn-info btn-sm" ng-click="addTagDialog.clear('thinking');addTagDialog.open=true;">添加标签</button>
                                     </div>
