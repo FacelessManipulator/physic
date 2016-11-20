@@ -1,7 +1,8 @@
 'use strict';
 
 var teacherApp = angular.module('physiclab.teacher',
-        ['angular-popups','ngSanitize', 'igniteui-directives','ui.calendar','angular-drag' ]);
+        ['angular-popups','ngSanitize', 'igniteui-directives',
+        'ui.calendar','angular-drag','ui.bootstrap','angularAwesomeSlider']);
 teacherApp.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -18,18 +19,28 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.page2 = '';
     $scope.editing_block = '';
     $scope.submitDialog = {'open':false,'reason':''};
-    $scope.closed_events = [];
-    $scope.unclosed_events = [];
-    $scope.unactive_events = [];
-    $scope.tag_types = [];
+    $scope.events = [];
+    $scope.tag_types = [{key:'',value:""}];
     $scope.tag_reason = {'raw_data_content':'','objective_content':'',
         'principle_content':'','process_content':'','data_processing_content':'',
         'instrument_content':'','thinking_content':''};
     $scope.tag_grade = {};
+    $scope.gradeSliderOption = {
+        from: 1,
+        to: 10,
+        step: 1,
+        dimension: "分",
+        smooth:true,
+        css: {
+          background: {"background-color": "silver"},
+          before: {"background-color": "#1abc9c"},
+          default: {"background-color": "white"},
+          after: {"background-color": "#f1c40f"},
+          pointer: {"background-color": "#5bc0de"}
+        },
+        scale: [0, '|', 5, '|' , 10],
+      };
 
-    $scope.events1 = {'color': '#3498db','events':$scope.closed_events};
-    $scope.events2 = {'color': '#f1c40f','events':$scope.unclosed_events};
-    $scope.events3 = {'color': '#e74c3c','events':$scope.unactive_events};
     $scope.chart_type = 'scatterLine';
     $scope.chart_types = [{'key':'scatterLine','value':'散点直线图'},{'key':'scatter','value':'散点图'},
                           {'key':'scatterSpline','value':'散点曲线图'}]
@@ -49,7 +60,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.experiments = {"loaded":false, 'content':[]};
     $scope.selected_experiment = {'loaded':false, 'content':{}};
     $scope.selected_report = {'loaded':false, 'content':{}};
-    $scope.addTagDialog = {block: '',open:false, grade: 1, reason: '', clear: function(block){this.grade=1;this.reason='';this.block=block;},
+    $scope.addTagDialog = {block: '',open:false, grade: 5, reason: '',reasons:{}, clear: function(block){this.grade=5;this.reason='';this.block=block;},
         add_tag:function(){
             if(this.block != ''){
                 $scope.add_tag(this.block+'_content',this.grade, this.reason);
@@ -703,24 +714,14 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         if(grade)
             var _grade = grade;
 
-        if(reason)
-            var _reason = reason;
-//        if(typeof($scope.tag_reason[block]) == 'object')
-//            $scope.tag_reason[block] = $scope.tag_reason[block][0];
-//        if(jQuery.inArray($scope.tag_reason[block],$scope.tag_types)){
-//            $scope.tag_types.push({"key":$scope.tag_reason[block],"value":$scope.tag_reason[block]});
-//            $(".tag_combo").igCombo("dataBind");
-//        }
-//
-//        $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
-//                                               'grade':$scope.tag_grade[block],
-//                                               'reason':$scope.tag_reason[block],
-//                                               'html':'',
-//                                               'block':block,
-//                                               },
-//                           $scope.selected_report.content.tags,$scope.render_tags);
-            if(jQuery.inArray(_reason,$scope.tag_types)){
-                $scope.tag_types.push({"key":$scope._reason,"value":_reason});
+        if(reason){
+            if('object'==typeof(reason))
+                var _reason = reason[0];
+            else
+                var _reason = reason;
+        }
+            if($scope.countDictFromArray($scope.tag_types,'key',_reason) == 0){
+                $scope.tag_types.push({"key":_reason,"value":_reason});
                 $(".tag_combo").igCombo("dataBind");
             }
                $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
@@ -831,27 +832,26 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     };
     $scope.render_all = function(){
         $scope.page1 = 'all';
-        var events;
-        $scope.closed_events.splice(0, $scope.closed_events.length);
-        $scope.unclosed_events.splice(0, $scope.unclosed_events.length);
-        $scope.unactive_events.splice(0, $scope.unactive_events.length);
+        $scope.events.splice(0, $scope.events.length);
         for(var i=0;i< $scope.experiments.content.length;i++){
+            var _class;
             if($scope.experiments.content[i].base.is_active){
                 if($scope.experiments.content[i].closed){
-                    events = $scope.closed_events;
+                    _class = "event-success";
                 }
                 else{
-                    events = $scope.unclosed_events;
+                    _class = "event-warning";
                 }
             }
             else{
-                events = $scope.unactive_events;
+                _class = "event-danger";
             }
-            events.push({title:"实验名:"+$scope.experiments.content[i].base.name+"-----教室:"+$scope.experiments.content[i].classroom,
+            $scope.events.push({title:"实验名:"+$scope.experiments.content[i].base.name+"-----教室:"+$scope.experiments.content[i].classroom,
                                start:new Date($scope.experiments.content[i].date),
                                 end:new Date($scope.experiments.content[i].end_date),
                                 eid:$scope.experiments.content[i].eid,
                                 allDay:true,
+                                className:_class,
                                 stick: true,
                                 });
         }
@@ -898,6 +898,12 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.alertOnEventClick = function(date, jsEvent, view){
         $scope.changeExperiment(date.eid);
     };
+    $scope.alertOnEventRender = function( event, element, view ) {
+        element.attr({'tooltip': event.title,
+                     'tooltip-append-to-body': true});
+        element.attr({'class': event.className+" fc-day-grid-event fc-event fc-start fc-end fc-draggable"});
+        $compile(element)($scope);
+    };
     /* config object */
     $scope.uiConfig = {
       calendar:{
@@ -912,9 +918,10 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
           right: 'today prev,next'
         },
         eventClick: $scope.alertOnEventClick,
+        eventRender: $scope.alertOnEventRender,
       }
     };
 
-    $scope.eventSources = [$scope.events1,$scope.events2,$scope.events3,];
+    $scope.eventSources = [$scope.events];
     $scope.changeAll();
 });

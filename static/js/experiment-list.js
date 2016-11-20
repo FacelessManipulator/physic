@@ -619,7 +619,7 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
 
             // remove the drop zone element
             $("#"+$scope.editing_block+"-dropZone").remove();
-    }
+    };
 
     /* config object */
     $scope.uiConfig = {
