@@ -344,7 +344,7 @@
                   <span>实验文档上传</span>
                 </div>
                 <div ng-repeat="file in selected_report.content.attach_files" class="content">
-                  <a href="file.url" ng-bind-html="file.name" download></a>
+                  <a ng-href="{% templatetag openvariable %} file.url {% templatetag closevariable %}" ng-bind-html="file.name" download></a>
                 </div>
                 <div ng-show="!selected_report.is_submit" ngf-select="uploadFiles('report',$files)" ngf-drop="uploadFiles('report',$files)" ngf-multiple="true"
                      ngf-max-size="50MB" style="height:200px;" class="drop-box">

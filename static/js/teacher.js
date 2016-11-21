@@ -20,7 +20,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.editing_block = '';
     $scope.submitDialog = {'open':false,'reason':''};
     $scope.events = [];
-    $scope.tag_types = [{key:'',value:""}];
+    $scope.tag_types = prefix_tag;
     $scope.tag_reason = {'raw_data_content':'','objective_content':'',
         'principle_content':'','process_content':'','data_processing_content':'',
         'instrument_content':'','thinking_content':''};
