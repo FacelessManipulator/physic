@@ -133,7 +133,8 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                 }
             },
             function errorCallback(response){
-                $('#error').html("<i style='color:red;margin-right:15px;' class='icon-warning-sign'></i>连接超时,请刷新后在试");
+                //$('#error').html("<i style='color:red;margin-right:15px;' class='icon-warning-sign'></i>连接超时,请刷新后在试");
+                alert("连接服务器失败，请尝试重新发送数据或更换网络后再发送");
             });
     };
 
