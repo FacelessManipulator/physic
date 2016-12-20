@@ -101,11 +101,12 @@ def add_base_experiment(request):
             title = request.POST.get('title', '')
             start_time = request.POST.get('start_time')
             type = request.POST.get('type', '')
+            full = request.POST.get('full', 100)
             if BaseExperiment.objects.filter(title=title).exists():
                 return JsonResponse({'status': 506, 'msg': '实验号重复'})
             try:
                 if start_time is None:
-                    base = BaseExperiment(name=name, type=type, created_user=user.name, title=title)
+                    base = BaseExperiment(name=name, type=type, created_user=user.name, title=title, full=full)
                     base.save()
                 else:
                     base = BaseExperiment(name=name, type=type, created_user=user.name, title=title, start_time=start_time)
@@ -129,11 +130,13 @@ def modify_base_experiment(request):
             type = request.POST.get('type','')
             start_time = request.POST.get('start_time')
             is_active = request.POST.get('is_active', '')
+            full = request.POST.get('full')
             try:
                 base = BaseExperiment.objects.get(bid=bid)
                 base.name = name
                 base.type = type
                 base.title = title if title != '' else bid
+                base.full = int(full) if full is not None else base.full
                 base.is_active = True if is_active == 'true' else False
                 if start_time is not None:
                     base.start_time = start_time

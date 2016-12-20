@@ -16,6 +16,7 @@ class BaseExperiment(models.Model):
     created_user = models.CharField(max_length=128)
     start_time = models.DateField(default=timezone.now)
     is_active = models.BooleanField(default=False)
+    full = models.IntegerField(default=100)
 
     def get_dict(self, simple=True):
         dic = {}
@@ -26,6 +27,7 @@ class BaseExperiment(models.Model):
         dic['is_active'] = self.is_active
         dic['created_time'] = str(self.created_time)
         dic['start_time'] = str(self.start_time)
+        dic['full'] = self.full
         if not simple:
             dic['sub_class'] = [exp.get_dict(simple=False) for exp in self.experience.all()]
         else:

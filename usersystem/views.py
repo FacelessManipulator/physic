@@ -385,6 +385,7 @@ def modify_report(request):
         content = request.POST.get('content')
         is_corrected = request.POST.get('is_corrected')
         grade = request.POST.get('grade')
+        confirmed = request.POST.get('confirmed')
         if user.group =='student' and rid is not None and block is not None and content is not None:
             try:
                 report = Report.objects.get(rid=rid)
@@ -414,7 +415,8 @@ def modify_report(request):
                     return JsonResponse({'status': 501, 'msg': '权限不足'})
                 if grade is not None:
                     report.total_grades = grade
-                    report.is_corrected = True
+                    if confirmed is not None:
+                        report.is_corrected = True
                 if is_corrected is not None:
                     report.is_corrected = False if is_corrected == 'false' else True
                 report.save()
@@ -532,19 +534,22 @@ def opt_tag(request):
             except:
                 return JsonResponse({'status': 503, 'msg': '添加失败'})
         # 删除
-        elif tid is not None and html is None:
+        elif tid is not None and (grade, reason, html) != (None, None, None):
+            try:
+                tag = ReportTag.objects.get(tid=tid)
+                tag.html = html if html is not None else tag.html
+                tag.grade = grade if grade is not None else tag.grade
+                tag.reason = reason if reason is not None else tag.reason
+
+                tag.save()
+                return JsonResponse({'status': 201, 'content': tag.get_dict()})
+            except:
+                return JsonResponse({'status': 503, 'msg': '删除失败'})
+        elif tid is not None:
             try:
                 tag = ReportTag.objects.get(tid=tid)
                 tag.delete()
                 return JsonResponse({'status': 201})
-            except:
-                return JsonResponse({'status': 503, 'msg': '删除失败'})
-        elif tid is not None and html is not None:
-            try:
-                tag = ReportTag.objects.get(tid=tid)
-                tag.html = html
-                tag.save()
-                return JsonResponse({'status': 201, 'content': tag.get_dict()})
             except:
                 return JsonResponse({'status': 503, 'msg': '删除失败'})
     return JsonResponse({'status': 503, 'msg': '删除失败'})

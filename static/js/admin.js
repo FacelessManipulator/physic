@@ -322,8 +322,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
 //                   { key: "start_time", headerText: "开始时间", dataType: "date", width: "20%" },
 //                   { key: "created_time", headerText: "创建时间", dataType: "date", width: "20%" },
                    { key: "is_active", headerText: "激活", dataType: "string", width: "20%" },
-                   { key: "jump", headerText: "教师列表", dataType: "string",unbound:true, width: "20%",
-                                template:"<button class='btn btn-success btn-xs' onclick='changeToExperiment(${eid})'>教师列表</button>" },
+                   { key: "full", headerText: "满分", dataType: "number", width: "20%",}
 
                 ],
                 autoGenerateLayouts: false,

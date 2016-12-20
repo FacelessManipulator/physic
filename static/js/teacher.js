@@ -3,6 +3,26 @@
 var teacherApp = angular.module('physiclab.teacher',
         ['angular-popups','ngSanitize', 'igniteui-directives',
         'ui.calendar','angular-drag','ui.bootstrap','angularAwesomeSlider']);
+
+teacherApp.directive('ngContextmenu', ['$parse', function($parse) {
+    return {
+        restrict: 'A',
+        compile: function($element, attr) {
+            var fn = $parse(attr.ngContextmenu, null, true);
+            return function(scope, element) {
+                element.on('contextmenu', function(event) {
+                    var callback = function() {
+                        fn(scope, {
+                            $event: event
+                        });
+                    };
+                    scope.$apply(callback);
+                    event.preventDefault()
+                });
+            };
+        }
+    };
+}]);
 teacherApp.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -26,7 +46,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         'instrument_content':'','thinking_content':''};
     $scope.tag_grade = {};
     $scope.gradeSliderOption = {
-        from: 1,
+        from: 0,
         to: 10,
         step: 1,
         dimension: "分",
@@ -43,7 +63,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
 
     $scope.chart_type = 'scatterLine';
     $scope.chart_types = [{'key':'scatterLine','value':'散点直线图'},{'key':'scatter','value':'散点图'},
-                          {'key':'scatterSpline','value':'散点曲线图'}]
+                          {'key':'scatterSpline','value':'散点曲线图'}];
     $scope.last_report = {};
     $scope.calendar_hidden = false;
     $scope.calculator_hidden = true;
@@ -60,12 +80,18 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.experiments = {"loaded":false, 'content':[]};
     $scope.selected_experiment = {'loaded':false, 'content':{}};
     $scope.selected_report = {'loaded':false, 'content':{}};
-    $scope.addTagDialog = {block: '',open:false, grade: 5, reason: '',reasons:{}, clear: function(block){this.grade=5;this.reason='';this.block=block;},
+    $scope.addTagDialog = {block: '',open:false, grade: 5, reason: '',reasons:{},tid:'', clear: function(block){this.grade=5;this.reason='';this.block=block;this.tid='';},
+        modify: function(event){this.clear('');this.tid = event.currentTarget.getAttribute('tag-id');this.open=true;},
         add_tag:function(){
             if(this.block != ''){
                 $scope.add_tag(this.block+'_content',this.grade, this.reason);
             }
-        },reasonDropClosed:function(evt,ui){console.log(evt);console.log(ui);}};
+            else if(this.tid != ''){
+                $scope.modify_tag(this.tid,this.grade, this.reason);
+            }
+        },reasonDropClosed:function(evt,ui){console.log(evt);console.log(ui);},
+        deleteTag:function(event){this.tid = event.currentTarget.getAttribute('tag-id');$scope.delete_tag(this.tid);}};
+    $scope.contextMenuPopup = {'open':false};
     function removeElement(_element){
          var _parentElement = _element.parentNode;
          if(_parentElement){
@@ -680,13 +706,18 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             $("#report-grid").igGrid("dataSourceObject", $scope.selected_experiment.content.reports);
             $("#report-grid").igGrid("dataBind");
         }
+        $scope.generateCorrectLink(false);
     };
-    $scope.submitGrade = function(){
-        $scope.modifyData('/user/report/modify', {'rid':$scope.selected_report.rid,
-                                                  'grade':$("#report_grade").igNumericEditor('value')});
+    $scope.submitGrade = function(is_confirmed){
+        var data = {'rid':$scope.selected_report.rid,
+                    'grade':$("#report_grade").igNumericEditor('value')};
+        if(is_confirmed){
+            data['confirmed'] = 'T';
+            $scope.generateGradeChat("chart2-report-grade");
+        }
+        $scope.modifyData('/user/report/modify',data );
         $scope.selected_report.total_grades = $("#report_grade").igNumericEditor('value');
         $scope.grade_editor_hidden = true;
-        $scope.generateGradeChat("chart2-report-grade");
     };
 
     $scope.render_tags = function(){
@@ -694,13 +725,19 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         for(var i=0;i<olds.length;i++){
             removeElement(olds[i]);
         }
-        var total_grades = 100;
+        var total_grades = $scope.selected_report.content.experiment.base.full;
         for(var i in $scope.selected_report.content.tags){
             var tag = $scope.selected_report.content.tags[i];
-            var html = '<div class="drag tooltip right in" tag-id="'+tag.tid
-                +'" drag onmouseup="move_tag(this)" style="'+tag.html
-                +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>扣'+
-                    tag.grade+'分</div><div>'+tag.reason+'</div></div></div>"';
+            var html;
+            if(tag.grade > 0)
+                html = '<div ng-contextmenu="contextMenuPopup={open: $event}" class="drag tooltip right in" tag-id="'+tag.tid
+                    +'" drag onmouseup="move_tag(this)" style="'+tag.html
+                    +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>扣'+
+                        tag.grade+'分</div><div>'+tag.reason+'</div></div></div>"';
+            else
+                html = '<div ng-contextmenu="contextMenuPopup={open: $event}" class="drag tooltip right in" tag-id="'+tag.tid
+                    +'" drag onmouseup="move_tag(this)" style="'+tag.html
+                    +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>提醒</div><div>'+tag.reason+'</div></div></div>"';
             var content = $compile(html)($scope);
             $("#"+tag.block).append(content);
             total_grades -= tag.grade;
@@ -709,11 +746,20 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         $("#report_grade").igNumericEditor('value',$scope.selected_report.total_grades);
         $scope.submitGrade();
     };
+    $scope.modify_tag = function(tid, grade, reason){
+        var tag = $scope.findDictFromArray($scope.selected_report.content.tags,'tid',tid);
+        tag.grade = grade;
+        tag.reason = reason;
+        $scope.modifyData('/user/report/tag', {'tid':tag.tid,
+                                               'grade':grade,
+                                               'reason':reason,
+                                               },
+               0,$scope.render_tags);
+    }
     $scope.add_tag = function(block, grade, reason){
         var parent = $("#"+block);
-        if(grade)
+        if(typeof(grade) == "number")
             var _grade = grade;
-
         if(reason){
             if('object'==typeof(reason))
                 var _reason = reason[0];
@@ -756,18 +802,15 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             width:"100%",
             value: $scope.selected_report.total_grades,
             minValue: -1,
-            maxValue: 101,
+            maxValue: $scope.selected_report.content.experiment.base.full+1,
             textAlign: "center",
             valueChanged: $scope.submitGrade,
         });
         $scope.generateGradeChat("chart2-report-grade");
         $scope.render_tags();
     };
-    $scope.correct = function(){
-        if($scope.selected_report.is_corrected)
-            $scope.submitGrade();
-        $scope.selected_report.is_corrected = true;
-        if(!$scope.experiments.loaded){
+    $scope.generateCorrectLink = function(jump){
+         if(!$scope.experiments.loaded){
             $scope.freshData('/experiment/all',$scope.experiments);
         }
         if(!$scope.selected_experiment.eid){
@@ -778,26 +821,32 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             if(!$scope.selected_experiment.loaded){
                 $scope.freshData('/experiment/all?eid='+$scope.selected_experiment.eid,$scope.selected_experiment);
             }
-            var prev = $scope.selected_report;
-            //var to_select = $scope.findDictFromArray($scope.selected_experiment.content.reports, 'is_corrected', false);
-
-            var to_select = $scope.filterFromArray($scope.selected_experiment.content.reports,
+            var to_correct= $scope.filterFromArray($scope.selected_experiment.content.reports,
                     ['is_corrected','is_submit'],[false,true]);
-            if(to_select.length > 0){
-                $scope.selected_report = to_select[0];
-                if(prev.rid){
-                    $scope.selected_report.prev = prev;
-                    prev.next = $scope.selected_report;
+            if(to_correct.length > 0){
+                for(var i in to_correct){
+                    if(i > 0){
+                        to_correct[i].prev = to_correct[i-1];
+                        to_correct[i-1].next =  to_correct[i];
+                    }
                 }
-                else{
-                    $scope.selected_report.prev = $scope.selected_report;
+                if(jump){
+                    $scope.selected_report = to_correct[0];
+                    $scope.freshData('/user/report?rid='+$scope.selected_report.rid, $scope.selected_report, $scope.render_report);
                 }
-                $scope.freshData('/user/report?rid='+$scope.selected_report.rid, $scope.selected_report, $scope.render_report);
             }
-            else{
-                // TODO: 提醒已经批改完成
-                $("#get_next_span").html("没有更多了");
-            }
+        }
+    };
+    $scope.correct = function(){
+        $scope.selected_report.is_corrected = true;
+        if($scope.selected_report.is_corrected)
+            $scope.submitGrade(true);
+        if(!$scope.experiments.loaded){
+            $scope.freshData('/experiment/all',$scope.experiments);
+        }
+        if(!$scope.selected_experiment.eid){
+        // TODO: 未选择当前实验,应做提醒
+            console.log($scope.selected_experiment);
         }
     };
     $scope.changeReport = function(rid){

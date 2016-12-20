@@ -1,3 +1,33 @@
+.ui-contextmenu {
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+            list-style: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border: 1px solid #ccc;
+            font-family: Helvetica, arial, sans-serif;
+            background: #FFF;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            border: solid 1px #DCDCDC;
+        }
+        .ui-contextmenu a {
+            display: block;
+            margin: 0;
+            padding: 8px 10px;
+            white-space: nowrap;
+            cursor: pointer;
+            color: #333;
+            background: transparent;
+            outline: 0 none;
+            text-decoration: none;
+        }
+        .ui-contextmenu a:hover {
+            background: #3870F3;
+            color: #FFF;        }
+        .ui-contextmenu a:focus {
+            outline: 0 none;
+        }
 .mubu {
     background: black;
     width: 100%;

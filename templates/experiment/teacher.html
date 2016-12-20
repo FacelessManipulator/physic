@@ -94,7 +94,7 @@
                     <span class="span " ng-bind-html="'时间:'+selected_experiment.week"></span>
                     <span class="span " ng-bind-html="'地点:'+selected_experiment.classroom"></span>
                 </div>
-                <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report']" ng-click="correct()">批改报告</button>
+                <button class="btn btn-full ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report']" ng-click="generateCorrectLink(true)">批改报告</button>
             </div>
         </div>
         <div class="col-xs-offset-3 col-md-offset-2 col-xs-9 col-md-10">
@@ -125,7 +125,6 @@
                         <div style="width:100%;text-align:center;">
                             <div style="float:left">
                                 <span class="prev-next-span" ng-if="selected_report.prev" ng-bind-html="'上一份:'+selected_report.prev.content.student_name"></span>
-                                <a style="float:right" class="circle-button" ng-if="selected_report.prev" href="#" ng-click="changeReport(selected_report.prev.rid)"><i class="icon-angle-left"></i></a>
                             </div>
                             <span class="prev-next-span" style="float:none;" ng-if="selected_report.rid" ng-bind-html="'当前报告:'+selected_report.content.student_name"></span>
                             <div style="float:right">
@@ -294,8 +293,8 @@
                                             data-mode="int"
                                             height= "32"
                                             width="28" style="line-height:28px;float:right;"
-                                            min-value= "0"
-                                            max-value= "10"
+                                            min-value= "-1"
+                                            max-value= "11"
                                             ng-model="addTagDialog.grade"
                                             text-align= "center">
                                         </ig-numeric-editor>
@@ -327,9 +326,18 @@
                                       <!--<input id="reason-tag" style="font-size:19px;height:29px;" type="text" ng-model="addTagDialog.reason"/>-->
                                   </div>
                                 </div>
-                                <div dialog-buttons><button ng-click="addTagDialog.add_tag();$close();" autofocus>添加</button><button ng-click="$close()">取消</button></div>
-                              </dialog>
-                            <div class="row block draw_dv">
+                                <div dialog-buttons><button ng-show="addTagDialog.block!=''" ng-click="addTagDialog.add_tag();$close();" autofocus>添加</button>
+                                    <button ng-show="addTagDialog.tid!=''" ng-click="addTagDialog.add_tag();$close();" autofocus>修改</button>
+                                    <button ng-click="$close()">取消</button></div>
+                            </dialog>
+
+                            <popup ng-if="contextMenuPopup.open" close="contextMenuPopup.open=false" close-action="esc outerchick click">
+                                <ul class="ui-contextmenu" ng-click="$close()">
+                                    <li><a href="#1" ng-click="addTagDialog.modify(contextMenuPopup.open)">修改内容</a></li>
+                                    <li><a href="#2" ng-click="addTagDialog.deleteTag(contextMenuPopup.open)">删除</a></li>
+                                </ul>
+                            </popup>
+                            <div class="row block">
                                 <div class="title">
                                     <span>数据处理</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">
