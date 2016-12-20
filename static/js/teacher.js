@@ -730,14 +730,14 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             var tag = $scope.selected_report.content.tags[i];
             var html;
             if(tag.grade > 0)
-                html = '<div ng-contextmenu="contextMenuPopup={open: $event}" class="drag tooltip right in" tag-id="'+tag.tid
-                    +'" drag onmouseup="move_tag(this)" style="'+tag.html
-                    +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>扣'+
+                html = '<div ng-contextmenu="contextMenuPopup={open: $event}" tag-id="'+tag.tid
+                    +'" drag onmouseup="move_tag(this)" '+tag.html
+                    +' ><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>扣'+
                         tag.grade+'分</div><div>'+tag.reason+'</div></div></div>"';
             else
-                html = '<div ng-contextmenu="contextMenuPopup={open: $event}" class="drag tooltip right in" tag-id="'+tag.tid
-                    +'" drag onmouseup="move_tag(this)" style="'+tag.html
-                    +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>提醒</div><div>'+tag.reason+'</div></div></div>"';
+                html = '<div ng-contextmenu="contextMenuPopup={open: $event}" tag-id="'+tag.tid
+                    +'" drag onmouseup="move_tag(this)" '+tag.html
+                    +' ><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>提醒</div><div>'+tag.reason+'</div></div></div>"';
             var content = $compile(html)($scope);
             $("#"+tag.block).append(content);
             total_grades -= tag.grade;
@@ -773,15 +773,23 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
                $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
                                                'grade':_grade,
                                                'reason':_reason,
-                                               'html':'',
+                                               'html':'class="drag tooltip right in default"',
                                                'block':block,
                                                },
                $scope.selected_report.content.tags,$scope.render_tags);
     };
-    $scope.move_tag = function(tid, style){
+    $scope.move_tag = function(tid, html){
         var tag = $scope.findDictFromArray($scope.selected_report.content.tags,'tid',tid);
-        tag.html = style;
-        $scope.modifyData('/user/report/tag', {'tid':tid,'html':style,});
+        tag.html = html;
+        $scope.modifyData('/user/report/tag', {'tid':tid,'html':html,});
+    };
+    $scope.tagChangeColor = function(event, color){
+        $(event.currentTarget).removeClass("default").removeClass("blue").removeClass("yellow").removeClass("red");
+        $(event.currentTarget).addClass(color);
+        var tid = event.currentTarget.getAttribute("tag-id");
+        var tag = $scope.findDictFromArray($scope.selected_report.content.tags,'tid',tid);
+        tag.html = 'class="'+ event.currentTarget.getAttribute('class') +'" style="'+event.currentTarget.getAttribute('style') +'"';
+        $scope.modifyData('/user/report/tag', {'tid':tid,'html':tag.html,});
     };
     $scope.delete_tag = function(tid){
         $scope.modifyData('/user/report/tag', {'tid':tid});

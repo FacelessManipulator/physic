@@ -22,6 +22,16 @@
             outline: 0 none;
             text-decoration: none;
         }
+        .ui-contextmenu span{
+            display: block;
+            margin: 0;
+            padding: 8px 10px;
+            white-space: nowrap;
+            color: #333;
+            background: transparent;
+            outline: 0 none;
+            text-decoration: none;
+        }
         .ui-contextmenu a:hover {
             background: #3870F3;
             color: #FFF;        }

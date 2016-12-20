@@ -28,9 +28,10 @@
     };
     var move_tag = function(tag){
         var style = tag.getAttribute('style');
+        var _class = tag.getAttribute('class');
         var tid = tag.getAttribute('tag-id');
         var scope = angular.element($("#teacherApp")).scope();
-        scope.move_tag(tid,style);
+        scope.move_tag(tid,'class="'+ _class +'" style="'+style+'"');
     };
 </script>
 <script src="/static/js/teacher.js"></script>
@@ -64,9 +65,10 @@
     };
     var move_tag = function(tag){
         var style = tag.getAttribute('style');
+        var _class = tag.getAttribute('class');
         var tid = tag.getAttribute('tag-id');
         var scope = angular.element($("#teacherApp")).scope();
-        scope.move_tag(tid,style);
+        scope.move_tag(tid,'class="'+ _class +'" style="'+style+'"');
     };
 </script>
 <script>
@@ -335,6 +337,15 @@
                                 <ul class="ui-contextmenu" ng-click="$close()">
                                     <li><a href="#1" ng-click="addTagDialog.modify(contextMenuPopup.open)">修改内容</a></li>
                                     <li><a href="#2" ng-click="addTagDialog.deleteTag(contextMenuPopup.open)">删除</a></li>
+                                    <li>
+                                        <span>颜色</span>
+                                        <ul style="list-style:none;padding:0;margin:0;">
+                                        <li class="color-chooser"><span class="color-box" ng-click="tagChangeColor(contextMenuPopup.open, 'default')" style="background:#16a085"></span></li>
+                                        <li class="color-chooser"><span class="color-box" ng-click="tagChangeColor(contextMenuPopup.open, 'red')" style="background:#e74c3c"></span></li>
+                                        <li class="color-chooser"><span class="color-box" ng-click="tagChangeColor(contextMenuPopup.open, 'yellow')" style="background:#f1c40f"></span></li>
+                                        <li class="color-chooser"><span class="color-box" ng-click="tagChangeColor(contextMenuPopup.open, 'blue')" style="background:#46b8da"></span></li>
+                                        </ul>
+                                    </li>
                                 </ul>
                             </popup>
                             <div class="row block">

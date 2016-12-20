@@ -164,10 +164,29 @@ body{
         color: #888;
         font-size: 12px;
 }
-.tooltip-arrow{
+.tooltip.default>.tooltip-arrow{
     border-right-color:#16a085!important;
-}.tooltip-inner{
+}
+.tooltip.default>.tooltip-inner{
     background-color:#16a085;
+}
+.tooltip.red>.tooltip-arrow{
+    border-right-color:#e74c3c!important;
+}
+.tooltip.red>.tooltip-inner{
+    background-color:#e74c3c;
+}
+.tooltip.yellow>.tooltip-arrow{
+    border-right-color:#f1c40f!important;
+}
+.tooltip.yellow>.tooltip-inner{
+    background-color:#f1c40f;
+}
+.tooltip.blue>.tooltip-arrow{
+    border-right-color:#46b8da!important;
+}
+.tooltip.blue>.tooltip-inner{
+    background-color:#46b8da;
 }
 .drop-box{
     cursor: pointer;
@@ -307,4 +326,16 @@ tr:hover{
     background-color: #3498db;
     border-color: white;
     color: white;
+}
+.color-chooser{
+    float: left;
+}
+.color-box{
+    display: block;
+    width: 10px;
+    margin: 3px;
+    height: 10px;
+    background: white;
+    border: solid 1px black;
+    cursor: pointer;
 }
