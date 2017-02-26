@@ -2,6 +2,7 @@
 {% block css %}
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
 <link rel="stylesheet" href="/static/bower_components/fullcalendar/dist/fullcalendar.css"/>
+<link rel="stylesheet" href="/static/bower_components/handsontable/dist/handsontable.full.css"/>
 <link href="/static/css/experiment-list.css" rel="stylesheet"/>
 <link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
 {% endblock%}
@@ -34,6 +35,8 @@
 "bower_components/angular-ui-calendar/src/calendar.js,"+
 "bower_components/fullcalendar/dist/fullcalendar.min.js,"+
 "bower_components/fullcalendar/dist/gcal.js,"+
+"bower_components/handsontable/dist/handsontable.full.pro.min.js,"+
+"bower_components/ngHandsontable/dist/ngHandsontable.js,"+
 "js/experiment-list.js"
 
 {% endblock %}
@@ -47,7 +50,7 @@
 
 <script src="/static/js/math-editor.js"></script>
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
-<div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl">
+<div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl as experimentCtrl">
   <div class="row">
     <div class="col-xs-3 col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
       <div class="row" style="height:40px;">
@@ -93,6 +96,26 @@
       <div style="height:40px;" id="top"></div>
       <div class="row viewer">
         <div class="container-fluid"  ng-show="page1=='report'">
+          <dialog ng-show="dialogs.add_row_data.open" for="add-row-data" close="dialogs.add_row_data.open=false" close-action="esc outerchick">
+                                <div dialog-title>添加原始数据表</div>
+                                <div dialog-content>
+                                  <div class="input-group input-group-sm" style="width:200px;">
+                                    <span class="input-group-addon">标题</span>
+                                    <input type="text" class="form-control" ng-model="dialogs.add_row_data.name" placeholder="未命名">
+                                </div>
+                                  <br>
+                                  <div class="input-group input-group-sm" style="width:200px;">
+                                    <span class="input-group-addon">行数</span>
+                                    <input type="number" class="form-control" ng-model="dialogs.add_row_data.row" min=1 placeholder="10">
+                                </div>
+                                  <br>
+                                  <div class="input-group input-group-sm" style="width:200px;">
+                                    <span class="input-group-addon">列数</span>
+                                    <input type="number"  min=1  class="form-control" ng-model="dialogs.add_row_data.col" placeholder="10">
+                                </div>
+                                </div>
+                              <div dialog-buttons><button ng-click="create_data_table(dialogs.add_row_data.name, dialogs.add_row_data.row,dialogs.add_row_data.col);$close()" autofocus>确定</button><button ng-click="$close()">取消</button></div>
+                            </dialog>
           <div class="row block">
             <a href="javascript:;" ng-click="changeReport(selected_report.rid)"><span style="font-size:29px" ng-bind-html="selected_report.experiment_name"></span></a>
             <span style="font-size: 17px;color: #888;margin-left: 30px;" ng-bind-html="selected_report.experiment.week"></span>
@@ -118,7 +141,9 @@
                 <div class="title">
                   <span>原始数据</span>
                   <div class="btn-group" style="float:right">
-                    <button class="btn btn-info btn-sm" ng-if="editing_block!='raw_data'&&!selected_report.is_submit" ng-click="raw_data_editor_edit('raw_data')" >添加数据表格</button>
+                    <!--<button class="btn btn-info btn-sm" ng-if="editing_block!='raw_data'&&!selected_report.is_submit" ng-click="raw_data_editor_edit('raw_data')" >添加数据表格</button>-->
+                    <button id="add-row-data" class="btn btn-info btn-sm" ng-if="editing_block!='raw_data'&&!selected_report.is_submit" ng-click="dialogs.add_row_data.open=true" >添加数据表格</button>
+                    <!--<a class="circle-button2 btn-info" href="javascript:;" ng-click="create_data_table('raw_data_content', 10,10)" style="top:-15px;right:45px;" title="添加表格"><i class="icon-plus"></i></a>-->
                     <button class="btn btn-danger btn-sm" ng-if="editing_block=='raw_data'" ng-click="editor_cancel('raw_data')">取消</button>
                     <button class="btn btn-success btn-sm" ng-if="editing_block=='raw_data'" ng-click="editor_save('raw_data')">保存</button>
                   </div>
@@ -276,7 +301,7 @@
 
               <div class="row block">
                 <div class="title">实验信息</div>
-                <table>
+                <table class="custom-table">
                   <tbody>
                   <tr>
                     <td><span class="span-title">实验</span></td>
@@ -307,7 +332,7 @@
               <div class="row block" ng-if="selected_report.content.closed&&selected_report.content.is_corrected">
                 <div class="title">扣分项</div>
                 <div class="content">
-                  <table align="left" style="width:100%">
+                  <table align="left" style="width:100%" class="custom-table">
                     <tbody>
                     <tr ng-repeat="tag in selected_report.content.tags">
                       <td style="width:20%" ng-bind-html="tag.grade"></td>
@@ -325,7 +350,7 @@
                 <div class="head-img-div">
                   <img id="teacher-head-img" src="/static/images/head-img-default.jpg" class="img-circle"/>
                 </div>
-                <table align="left" style="width:100%">
+                <table align="left" style="width:100%" class="custom-table">
                   <tbody>
                   <tr>
                     <td style="width:35%;"><span class="span-title">姓名:</span></td>

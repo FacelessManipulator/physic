@@ -230,13 +230,32 @@ body{
     box-sizing: border-box;
     padding-top: 70px;
 }
-table{
+.custom-table table{
     width: 100%;
     margin-bottom: 20px;
 }
-tr:hover{
+/*
+.custom-table>tbody>tr:hover{
     background-color: #eee;
 }
+*/
+.scroll-container {
+    width: 700px;
+    height: 400px;
+    margin: 1rem 0 1rem;
+    overflow: hidden;
+    position: relative;
+}
+.ht_clone_left{
+    visibility: hidden;
+}
+.ht_clone_top_left_corner{
+    visibility: hidden;
+}
+.ht_clone_top {
+    visibility: hidden;
+}
+
 .span{
     word-break: normal;
     width: auto;
@@ -338,4 +357,15 @@ tr:hover{
     background: white;
     border: solid 1px black;
     cursor: pointer;
+}
+.circle-button2{
+    position: absolute;
+    color: #fff;
+    display: block;
+    border-radius: 50%;
+    font-size: 17px;
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    text-align: center;
 }

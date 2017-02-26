@@ -1,7 +1,7 @@
 'use strict';
 
 var teacherApp = angular.module('physiclab.teacher',
-        ['angular-popups','ngSanitize', 'igniteui-directives',
+        ['ngHandsontable','angular-popups','ngSanitize', 'igniteui-directives',
         'ui.calendar','angular-drag','ui.bootstrap','angularAwesomeSlider']);
 
 teacherApp.directive('ngContextmenu', ['$parse', function($parse) {
@@ -13,11 +13,12 @@ teacherApp.directive('ngContextmenu', ['$parse', function($parse) {
                 element.on('contextmenu', function(event) {
                     var callback = function() {
                         fn(scope, {
-                            $event: event
+                            $event: event,
                         });
                     };
                     scope.$apply(callback);
-                    event.preventDefault()
+                    event.preventDefault();
+                    event.stopPropagation();
                 });
             };
         }
@@ -39,6 +40,8 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.page2 = '';
     $scope.editing_block = '';
     $scope.submitDialog = {'open':false,'reason':''};
+    $scope.default_table_setting = {contextMenu: true,formulas: true,rowHeaders: true, colHeaders: true,
+        colWidths:55,rowHeights: 23, height: 300,width:640,manualColumnResize: true,  manualRowResize: true,renderAllRows: true};
     $scope.events = [];
     $scope.tag_types = prefix_tag;
     $scope.tag_reason = {'raw_data_content':'','objective_content':'',
@@ -80,11 +83,18 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.experiments = {"loaded":false, 'content':[]};
     $scope.selected_experiment = {'loaded':false, 'content':{}};
     $scope.selected_report = {'loaded':false, 'content':{}};
-    $scope.addTagDialog = {block: '',open:false, grade: 5, reason: '',reasons:{},tid:'', clear: function(block){this.grade=5;this.reason='';this.block=block;this.tid='';},
+    $scope.addTagDialog = {block: '',open:false, grade: 5, reason: '',reasons:{},
+        tid:'', clear: function(block){this.grade=5;this.reason='';this.block=block;this.tid='';this.position='';},
+        position:'',
+        contextMenuAdd: function(event, block){
+            this.position="left:"+event.offsetX+"px;top:"+event.offsetY+"px";
+            this.block = block;
+            this.open=true;
+        },
         modify: function(event){this.clear('');this.tid = event.currentTarget.getAttribute('tag-id');this.open=true;},
         add_tag:function(){
             if(this.block != ''){
-                $scope.add_tag(this.block+'_content',this.grade, this.reason);
+                $scope.add_tag(this.block+'_content',this.grade, this.reason, this.position);
             }
             else if(this.tid != ''){
                 $scope.modify_tag(this.tid,this.grade, this.reason);
@@ -92,6 +102,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         },reasonDropClosed:function(evt,ui){console.log(evt);console.log(ui);},
         deleteTag:function(event){this.tid = event.currentTarget.getAttribute('tag-id');$scope.delete_tag(this.tid);}};
     $scope.contextMenuPopup = {'open':false};
+    $scope.contentContextMenuPopup = {'open':false, 'block':''};
     function removeElement(_element){
          var _parentElement = _element.parentNode;
          if(_parentElement){
@@ -756,7 +767,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
                                                },
                0,$scope.render_tags);
     }
-    $scope.add_tag = function(block, grade, reason){
+    $scope.add_tag = function(block, grade, reason, position){
         var parent = $("#"+block);
         if(typeof(grade) == "number")
             var _grade = grade;
@@ -766,6 +777,10 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             else
                 var _reason = reason;
         }
+        if(position)
+            var _position = position;
+        else
+            var _position = "";
             if($scope.countDictFromArray($scope.tag_types,'key',_reason) == 0){
                 $scope.tag_types.push({"key":_reason,"value":_reason});
                 $(".tag_combo").igCombo("dataBind");
@@ -773,9 +788,10 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
                $scope.modifyData('/user/report/tag', {'rid':$scope.selected_report.rid,
                                                'grade':_grade,
                                                'reason':_reason,
-                                               'html':'class="drag tooltip right in default"',
+                                               'html':'class="drag tooltip right in default" style="'+_position+'"',
                                                'block':block,
                                                },
+
                $scope.selected_report.content.tags,$scope.render_tags);
     };
     $scope.move_tag = function(tid, html){
@@ -801,6 +817,9 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         var blocks = ['objective', 'process', 'instrument', 'principle','data_processing', 'thinking', 'raw_data'];
         for(var i in blocks){
             $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]);
+        }
+        for(var i in $scope.selected_report.content.data.tables){
+            $scope.render_data_table($scope.selected_report.content.data[$scope.selected_report.content.data.tables[i]]);
         }
         $("#student-head-img").attr('src',$scope.selected_report.content.student_photo);
         $("#report_grade").igNumericEditor({
@@ -886,6 +905,20 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             $scope.selected_report = {'loaded':false, 'content':{}};
             $("#get_next_span").html("批改下一份");
         }
+    };
+    $scope.render_data_table = function(data_table){
+        if(typeof(data_table.data) === 'string'){
+            var vec = data_table.data.split(',');
+            var serialized = new Array(data_table.row);
+            for(var i =0; i < data_table.row; i++){
+                serialized[i] = vec.slice(i*data_table.col, i*data_table.col+data_table.col);
+            }
+            data_table.data = serialized;
+        }
+        var html = '<div class="scroll-container" id="data-table-'+ data_table.id+'"> <h4 style="text-align:center;">'+data_table.name+
+        '</h4><hot-table settings="default_table_setting" datarows="selected_report.content.data['+data_table.id+'].data"></hot-table></div>';
+        var content = $compile(html)($scope);
+        $("#raw_data_content").append(content);
     };
     $scope.render_all = function(){
         $scope.page1 = 'all';

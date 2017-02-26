@@ -1,7 +1,7 @@
 'use strict';
 
 var experimentListApp = angular.module('physiclab.experimentList',
-        ['angular-popups','physiclab.directives','ngSanitize', 'igniteui-directives','ngFileUpload','ui.calendar','ui.bootstrap' ]);
+        ['ngHandsontable','angular-popups','physiclab.directives','ngSanitize', 'igniteui-directives','ngFileUpload','ui.calendar','ui.bootstrap' ]);
 experimentListApp.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -14,7 +14,7 @@ experimentListApp.config(function($httpProvider) {
         return angular.isObject(data) && String(data) !== '[object File]' ? $.param(data) : data;
     }];
 });
-experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Upload,$timeout,uiCalendarConfig){
+experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$http, $compile,Upload,$timeout,uiCalendarConfig){
     $scope.page1 = 'all';
     $scope.page2 = '';
     $scope.editing_block = '';
@@ -29,12 +29,17 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
     $scope.thinking={'editing':false, 'loaded':false};
     $scope.raw_data={'editing':false, 'loaded':false};
     $scope.reports = {"loaded":false};
+    $scope.default_table_setting = {contextMenu: true,formulas: true,rowHeaders: true, colHeaders: true,
+        colWidths:55,rowHeights: 23, height: 300,width:640,manualColumnResize: true,  manualRowResize: true,renderAllRows: true};
     $scope.selected_report = {'loaded':false, 'content':{}};
     $scope.experiment = {'name':'experiment', 'loaded':false, 'url':'experiment/base/all','content':[]};
     $scope.addExperimentDialog = {open:false};
     $scope.drag_hide = {data_processing: true, instrument: true,thinking: true,process: true,
             principle: true,objective: true}
     $scope.deleteDialog = {};
+    $scope.dialogs = {
+        add_row_data: { open: false, }
+    };
     $scope.mathDialog = {open:false};
     function removeElement(_element){
          var _parentElement = _element.parentNode;
@@ -401,6 +406,9 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
             $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]);
         }
         $("#teacher-head-img").attr('src',$scope.selected_report.content.teacher_photo);
+        for(var i in $scope.selected_report.content.data.tables){
+            $scope.render_data_table($scope.selected_report.content.data[$scope.selected_report.content.data.tables[i]]);
+        }
         if($scope.selected_report.closed&&$scope.selected_report.is_submit&&$scope.selected_report.is_corrected)
             $scope.render_tags();
     };
@@ -611,6 +619,72 @@ experimentListApp.controller('experimentCtrl',function($scope,$http, $compile,Up
                            $("#"+$scope.editing_block+"-dropZone").remove();
                         },5000);
             }
+    };
+    $scope.create_data_table = function(_name, row, col){
+        if(typeof(_name) === 'undefined'){
+            _name = '未命名数据表';
+        }
+        if(typeof(row) === 'undefined'){
+            row = 10;
+        }
+        if(typeof(col) === 'undefined'){
+            col = 10;
+        }
+        if(typeof($scope.selected_report.content.data) === 'undefined'){
+            $scope.selected_report.content.data = {maxID: 0,tables:[]};
+        }
+        var maxID = ++$scope.selected_report.content.data['maxID'];
+        var emptyData = new Array(row);
+        for(var i=0;i<row;i++){
+            emptyData[i] = new Array(col);
+            for(var j=0;j<col;j++)
+                 emptyData[i][j] = '';
+        }
+        $scope.selected_report.content.data[maxID] = {name:_name, data:emptyData, local: true,
+            col:col, row:row, id:maxID, rid:$scope.selected_report.content.rid };
+        $scope.render_data_table($scope.selected_report.content.data[maxID]);
+    };
+    $scope.render_data_table = function(data_table){
+        if(typeof(data_table.data) === 'string'){
+            var vec = data_table.data.split(',');
+            var serialized = new Array(data_table.row);
+            for(var i =0; i < data_table.row; i++){
+                serialized[i] = vec.slice(i*data_table.col, i*data_table.col+data_table.col);
+            }
+            data_table.data = serialized;
+        }
+        var html = '<div class="scroll-container" id="data-table-'+ data_table.id+'"> <h4 style="text-align:center;">'+data_table.name+
+        '</h4><hot-table settings="default_table_setting" datarows="selected_report.content.data['+data_table.id+'].data"></hot-table>'+
+        '<a class="circle-button2 btn-warning" href="#" style="top:60px;right:0;" title="保存" ng-click="save_data_table('+data_table.id+')"><i class="icon-save"></i></a>'+
+        '<a class="circle-button2 btn-danger" href="#" style="top:110PX;right:0;" title="删除" ng-click="delete_data_table('+data_table.id+')"><i class="icon-trash"></i></a></div>';
+        var content = $compile(html)($scope);
+        $("#raw_data_content").append(content);
+    };
+    $scope.delete_data_table = function(id){
+        var data_table = $scope.selected_report.content.data[id];
+        if(typeof(data_table) === 'undefined')
+            return;
+        if(data_table.local){
+            delete $scope.selected_report.content.data[id];
+            $("#data-table-"+data_table.id).remove();
+        }
+        else{
+            $scope.modifyData('/user/report/data-table/delete', {id:data_table.id, rid: data_table.rid}, undefined, undefined, function(){
+                delete $scope.selected_report.content.data[id];
+                $("#data-table-"+data_table.id).remove();
+            });
+        }
+    };
+    $scope.save_data_table = function(id){
+        var data_table = $scope.selected_report.content.data[id];
+        if(typeof(data_table) === 'undefined')
+            return;
+        var serialized = {id:data_table.id, rid: data_table.rid, data: data_table.data.toString(),
+            name: data_table.name, col: data_table.data[0].length, row: data_table.data.length};
+
+        $scope.modifyData('/user/report/data-table/add', serialized, undefined, undefined, function(){
+                data_table.local = false;
+            });
     };
     $scope.handleDragLeave = function (evt) {
             evt.stopPropagation();

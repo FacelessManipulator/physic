@@ -2,6 +2,7 @@
 {% block css %}
 <link href="/static/mathquill-0.9.1/mathquill.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="/static/bower_components/fullcalendar/dist/fullcalendar.css"/>
+<link rel="stylesheet" href="/static/bower_components/handsontable/dist/handsontable.full.css"/>
 <link href="/static/css/experiment-list.css" rel="stylesheet"/>
 <link href="/static/angularjs/1.5/angular-awesome-slider.min.css" rel="stylesheet"/>
 {% endblock%}
@@ -54,6 +55,8 @@
 "bower_components/fullcalendar/dist/fullcalendar.min.js,"+
 "bower_components/fullcalendar/dist/gcal.js,"+
 "bower_components/angular-ui-calendar/src/calendar.js,"+
+"bower_components/handsontable/dist/handsontable.full.pro.min.js,"+
+"bower_components/ngHandsontable/dist/ngHandsontable.js,"+
 "js/brush.js,"+
 "js/teacher.js"
 {% endblock %}
@@ -348,7 +351,13 @@
                                     </li>
                                 </ul>
                             </popup>
-                            <div class="row block">
+
+                            <popup ng-if="contentContextMenuPopup.open" close="contentContextMenuPopup.open=false" close-action="esc outerchick click">
+                                <ul class="ui-contextmenu" ng-click="$close()">
+                                    <li><a href="#1" ng-click="addTagDialog.contextMenuAdd(contentContextMenuPopup.open,contentContextMenuPopup.block)">添加标签</a></li>
+                                </ul>
+                            </popup>
+                            <div class="row block" ng-contextmenu="contentContextMenuPopup={open: $event, block:'data_processing'}">
                                 <div class="title">
                                     <span>数据处理</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">

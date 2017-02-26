@@ -233,6 +233,16 @@ class Report(models.Model):
                 dic['student_phone'] = student.phone
                 dic['attach_files'] = [attach_file.get_dict() for attach_file in self.file.all()]
                 dic['tags'] = [tag.get_dict() for tag in self.tag.all()]
+                data = {}
+                maxid = 0
+                table_id = []
+                for table in self.data_table.all():
+                    data[table.did] = table.get_dict()
+                    maxid = table.did if maxid < table.did else maxid
+                    table_id.append(table.did)
+                data['maxID'] = maxid
+                data['tables'] = table_id
+                dic['data'] = data
             except:
                 pass
         else:
@@ -286,6 +296,27 @@ class AttachFile(models.Model):
         try:
             dic['name'] = self.name
             dic['url'] = self.attach_file.url
+        except:
+            pass
+        return dic
+
+class DataTable(models.Model):
+    report = models.ForeignKey('Report', related_name='data_table', on_delete=models.CASCADE)
+    did = models.IntegerField()
+    data = models.TextField(null=True)
+    col = models.IntegerField(default=1)
+    row = models.IntegerField(default=1)
+    name = models.CharField(max_length=128,default='未命名')
+
+    def get_dict(self):
+        dic = {}
+        try:
+            dic['id'] = self.did
+            dic['data'] = self.data if self.data is not None else ''
+            dic['col'] = self.col
+            dic['row'] = self.row
+            dic['name'] = self.name
+            dic['rid'] = self.report.rid
         except:
             pass
         return dic

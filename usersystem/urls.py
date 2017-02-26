@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^report/image$', views.receive_image),
     url(r'^report/file$', views.receive_file),
     url(r'^report/tag', views.opt_tag),
+    url(r'^report/data-table/add', views.save_data_table),
+    url(r'^report/data-table/delete', views.delete_data_table),
     url(r'^institute', views.opt_institute),
     url(r'^major', views.opt_major),
     url(r'^class', views.opt_class),

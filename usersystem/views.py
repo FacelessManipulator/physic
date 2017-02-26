@@ -657,3 +657,44 @@ def push_back_report(request):
             return JsonResponse({'status': 503, 'msg': '邮件发送失败'})
         return JsonResponse({'status':201})
     return JsonResponse({'status': 502, 'msg': '不支持的操作'})
+
+@login_required
+def save_data_table(request):
+    user = request.user.userBaseInfo
+    if request.method =='POST':
+        try:
+            rid = request.POST.get('rid', '')
+            id = request.POST.get('id', '1')
+            report = user.report.get(rid=rid)
+            data_table = report.data_table.filter(did = id)
+            if len(data_table) == 0:
+                data_table = report.data_table.create(did=id)
+            else:
+                data_table = data_table[0]
+            data_table.data = request.POST.get('data', '')
+            data_table.name = request.POST.get('name', '未命名')
+            data_table.col = request.POST.get('col','1')
+            data_table.row = request.POST.get('row','1')
+            data_table.save()
+        except Exception,e:
+            return JsonResponse({'status': 503, 'msg': '不存在的rid'})
+        return JsonResponse({'status':201})
+    return JsonResponse({'status': 502, 'msg': '不支持的操作'})
+
+@login_required
+def delete_data_table(request):
+    user = request.user.userBaseInfo
+    if request.method =='POST':
+        try:
+            rid = request.POST.get('rid', '')
+            id = request.POST.get('id')
+            report = user.report.get(rid=rid)
+            data_table = report.data_table.filter(did=id)
+            if len(data_table) == 0:
+                return JsonResponse({'status':201})
+            else:
+                data_table.delete()
+        except Exception,e:
+            return JsonResponse({'status': 503, 'msg': '不存在的rid'})
+        return JsonResponse({'status':201})
+    return JsonResponse({'status': 502, 'msg': '不支持的操作'})
