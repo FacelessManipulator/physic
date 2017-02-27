@@ -393,10 +393,11 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
         }
         for(var i in $scope.selected_report.content.tags){
             var tag = $scope.selected_report.content.tags[i];
-            var html = '<div class="drag tooltip right in" style="'+tag.html
-                +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>扣'+
+            var html = '<div '+tag.html
+                +' ><div class="tooltip-arrow"></div><div class="tooltip-inner"><div>扣'+
                     tag.grade+'分</div><div>'+tag.reason+'</div></div></div>"';
             var content = $compile(html)($scope);
+            $(content).addClass('circle-tag');
             $("#"+tag.block).append(content);
         }
     };

@@ -368,3 +368,32 @@ body{
     line-height: 45px;
     text-align: center;
 }
+.circle-tag{
+    width: 20px;
+    height: 20px;
+    overflow: hidden;
+    background: rgba(231, 76, 60, 0.6);
+    padding: 0!important;
+    border-radius: 50%;
+    margin: 0!important;
+}
+.circle-tag>.tooltip-arrow{
+    visibility: hidden;
+}
+.circle-tag>.tooltip-inner{
+    visibility: hidden;
+}
+
+.circle-tag:hover{
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    background:#fff;
+    border-radius: 20%;
+}
+.circle-tag:hover>.tooltip-arrow{
+    visibility: visible;
+}
+.circle-tag:hover>.tooltip-inner{
+    visibility: visible;
+}
