@@ -417,6 +417,7 @@ def modify_report(request):
                     report.total_grades = grade
                     if confirmed is not None:
                         report.is_corrected = True
+                        report.corrected_time = datetime.datetime.now()
                 if is_corrected is not None:
                     report.is_corrected = False if is_corrected == 'false' else True
                 report.save()
@@ -625,6 +626,7 @@ def submit_report(request):
         try:
             report = user.report.get(rid=rid)
             report.is_submit = True
+            report.submit_time = datetime.datetime.now()
             report.is_corrected = False
             report.total_grades = 0
             report.save()

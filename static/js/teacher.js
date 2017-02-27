@@ -39,9 +39,11 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.page1 = 'all';
     $scope.page2 = '';
     $scope.editing_block = '';
+    $scope.compare_mode = false;
+    $scope.compare_report = {'loaded':false, 'content':{}};
     $scope.submitDialog = {'open':false,'reason':''};
     $scope.default_table_setting = {contextMenu: true,formulas: true,rowHeaders: true, colHeaders: true,
-        colWidths:55,rowHeights: 23, height: 300,width:640,manualColumnResize: true,  manualRowResize: true,renderAllRows: true};
+        colWidths:55,rowHeights: 23, height: 300,manualColumnResize: true,  manualRowResize: true,renderAllRows: true};
     $scope.events = [];
     $scope.tag_types = prefix_tag;
     $scope.tag_reason = {'raw_data_content':'','objective_content':'',
@@ -134,7 +136,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             else{
                 avg=0;
             }
-            return avg;
+            return Math.floor(avg*100)/100;
         }
     function countNotZeroValuesAvgFromDict(data, key) {
             var i, l = data.length, count = 0, elem,sum=0,avg;
@@ -151,7 +153,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             else{
                 avg=0;
             }
-            return avg;
+            return Math.floor(avg*100)/100;
         }
     function countFalseValues(data) {
             var i, l = data.length, count = 0, elem;
@@ -311,12 +313,12 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             primaryKey: "rid",
             width: '100%',
             columns: [
-                    { headerText: "报告号", key: "rid", dataType: "string", width: "15%" },
+                    { headerText: "报告号", key: "rid", dataType: "string", width: "0%", hidden:true },
                     { headerText: "姓名", key: "name", dataType: "string", width: "15%" },
                     { headerText: "学号", key: "username", dataType: "string", width: "15%" },
-                    { headerText: "已提交", key: "is_submit", dataType: "string", width: "15%" },
-                    { headerText: "已批改", key: "is_corrected", dataType: "string", width: "15%"},
-                    { headerText: "总分", key: "total_grades", dataType: "numeric", width: "15%" },
+                    { headerText: "已提交", key: "submit_stat", dataType: "string", width: "20%" },
+                    { headerText: "已批改", key: "correct_stat", dataType: "string", width: "20%"},
+                    { headerText: "总分", key: "total_grades", dataType: "numeric", width: "20%" },
                     { key: "jump", headerText: "查看", dataType: "string",unbound:true, width: "10%",
                                 template:"<button class='btn btn-success btn-xs' onclick='changeReport(${rid})'>查看</button>"},
                 ],
@@ -363,21 +365,23 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
 								validation: true,
 							},
 							{
-							    columnKey: "is_submit",
+							    columnKey: "submit_stat",
 								readOnly: true,
 								validation: true,
 							},
 							{
-								columnKey: "is_corrected",
-								editorType: 'combo',
-								required: true,
-								editorOptions: {
-                                    dataSource: $scope.active_choice,
-                                    valueKey: "key",
-                                    textKey: "value",
-                                    mode: "dropdown",
-								},
+								columnKey: "correct_stat",
+								readOnly: true,
 								validation: true,
+//								editorType: 'combo',
+//								required: true,
+//								editorOptions: {
+//                                    dataSource: $scope.active_choice,
+//                                    valueKey: "key",
+//                                    textKey: "value",
+//                                    mode: "dropdown",
+//								},
+//								validation: true,
 							},
 						],
 					},
@@ -430,21 +434,16 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
                                          columnKey: "time",
                                      },
                                      {
-                                columnKey: "is_corrected",
-                                summaryOperands: [
-                                    {
-                                        rowDisplayLabel: "已批改",
-                                        type: "custom1",
-                                        summaryCalculator: $.proxy(countTrueValues, this),
-                                        order: 1
-                                    },
-                                    {
-                                        rowDisplayLabel: "未批改",
-                                        type: "custom2",
-                                        summaryCalculator: $.proxy(countFalseValues, this),
-                                        order: 2
-                                    }
-                                ]
+                                    columnKey: "submit_stat",
+                                    allowSummaries: false
+                                },
+                                     {
+                                    columnKey: "correct_stat",
+                                    allowSummaries: false
+                                },
+                                     {
+                                    columnKey: "jump",
+                                    allowSummaries: false
                                 },
 
                                      {
@@ -647,7 +646,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         var data2 = $scope.countDictFromArray($scope.selected_experiment.content.reports, 'total_grades');
         var data3 = [];
         for(var i in data2){
-            data3.push({'total_grades':i,'count': data2[i]});
+            data3.push({'total_grades':i,'count': data2[i]/$scope.selected_experiment.content.reports.length});
         }
         var series = [{name:'成绩',type:'scatterLine',title:'成绩',xAxis:'xAxis',yAxis:'yAxis',
                         yMemberPath:'count',xMemberPath:'total_grades', markerType: "circle",}];
@@ -661,17 +660,17 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
                         name: "xAxis",
                         type: 'numericX',
                         title: '分数',
-                        maximumValue: 100,
+                        maximumValue: $scope.selected_experiment.content.base.full,
                         minimumValue:0,
-                        interval: 20,
+                        interval: $scope.selected_experiment.content.base.full/5,
                     },
                     {
                         name: "yAxis",
                         type: 'numericY',
                         title: '人数',
-                        maximumValue: $scope.selected_experiment.content.reports.length,
+                        maximumValue: 1,
                         minimumValue:0,
-                        interval: 1,
+                        interval: 0.1,
                     }
                 ],
                 series: series,
@@ -683,6 +682,17 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             });
     };
     $scope.render_experiment = function(){
+        var data = $scope.selected_experiment.content.reports;
+        for(var i = 0; i < data.length; i++){
+            if(data[i].is_submit)
+                data[i].submit_stat = data[i].submit_time;
+            else
+                data[i].submit_stat = '未提交';
+            if(data[i].is_corrected)
+                data[i].correct_stat = data[i].corrected_time;
+            else
+                data[i].correct_stat = '未批改';
+        }
         $scope.page1 = 'experiment';
         var closed = $scope.countDictFromArray($scope.selected_experiment.content.reports, 'closed', true);
         if(closed == 0){
@@ -717,7 +727,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             $("#report-grid").igGrid("dataSourceObject", $scope.selected_experiment.content.reports);
             $("#report-grid").igGrid("dataBind");
         }
-        $scope.generateCorrectLink(false);
+        $scope.generateCorrectLink(false, true);
     };
     $scope.submitGrade = function(is_confirmed){
         var data = {'rid':$scope.selected_report.rid,
@@ -812,11 +822,20 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         $scope.deleteDictFromArray($scope.selected_report.content.tags, 'tid', tid);
         $scope.render_tags();
     };
+    $scope.render_compare_report = function(){
+        var blocks = ['objective', 'process', 'instrument', 'principle','data_processing', 'thinking', 'raw_data'];
+        for(var i in blocks){
+            $("#"+blocks[i]+"_content_compare").html($scope.compare_report.content[blocks[i]]+'<div style="height: 40px;"></div>');
+        }
+        for(var i in $scope.compare_report.content.data.tables){
+            $scope.render_data_table($scope.compare_report.content.data[$scope.compare_report.content.data.tables[i]], true);
+        }
+    };
     $scope.render_report = function(){
         $scope.page1 = 'report';
         var blocks = ['objective', 'process', 'instrument', 'principle','data_processing', 'thinking', 'raw_data'];
         for(var i in blocks){
-            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]);
+            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]+'<div style="height: 40px;"></div>');
         }
         for(var i in $scope.selected_report.content.data.tables){
             $scope.render_data_table($scope.selected_report.content.data[$scope.selected_report.content.data.tables[i]]);
@@ -836,7 +855,9 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         $scope.generateGradeChat("chart2-report-grade");
         $scope.render_tags();
     };
-    $scope.generateCorrectLink = function(jump){
+    $scope.generateCorrectLink = function(jump, all){
+        if(typeof(all) === 'undefined')
+            all = false;
          if(!$scope.experiments.loaded){
             $scope.freshData('/experiment/all',$scope.experiments);
         }
@@ -848,8 +869,11 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             if(!$scope.selected_experiment.loaded){
                 $scope.freshData('/experiment/all?eid='+$scope.selected_experiment.eid,$scope.selected_experiment);
             }
-            var to_correct= $scope.filterFromArray($scope.selected_experiment.content.reports,
+            if(!all)
+                var to_correct= $scope.filterFromArray($scope.selected_experiment.content.reports,
                     ['is_corrected','is_submit'],[false,true]);
+            else
+                var to_correct= $scope.selected_experiment.content.reports;
             if(to_correct.length > 0){
                 for(var i in to_correct){
                     if(i > 0){
@@ -876,7 +900,10 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             console.log($scope.selected_experiment);
         }
     };
-    $scope.changeReport = function(rid){
+    $scope.changeReport = function(rid, compare){
+        if(typeof(compare) === 'undefined'){
+            compare = false;
+        }
         if(!$scope.experiments.loaded){
             $scope.freshData('/experiment/all',$scope.experiments);
         }
@@ -890,8 +917,14 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             }
             var to_select = $scope.findDictFromArray($scope.selected_experiment.content.reports, 'rid', rid);
             if(to_select){
-                $scope.selected_report = to_select;
-                $scope.freshData('/user/report?rid='+rid, $scope.selected_report, $scope.render_report);
+                if(!compare){
+                    $scope.selected_report = to_select;
+                    $scope.freshData('/user/report?rid='+rid, $scope.selected_report, $scope.render_report);
+                }
+                else{
+                    $scope.compare_report = to_select;
+                    $scope.freshData('/user/report?rid='+rid, $scope.compare_report, $scope.render_compare_report);
+                }
             }
         }
     };
@@ -906,7 +939,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             $("#get_next_span").html("批改下一份");
         }
     };
-    $scope.render_data_table = function(data_table){
+    $scope.render_data_table = function(data_table, compare){
         if(typeof(data_table.data) === 'string'){
             var vec = data_table.data.split(',');
             var serialized = new Array(data_table.row);
@@ -915,10 +948,18 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
             }
             data_table.data = serialized;
         }
-        var html = '<div class="scroll-container" id="data-table-'+ data_table.id+'"> <h4 style="text-align:center;">'+data_table.name+
-        '</h4><hot-table settings="default_table_setting" datarows="selected_report.content.data['+data_table.id+'].data"></hot-table></div>';
-        var content = $compile(html)($scope);
-        $("#raw_data_content").append(content);
+        if(compare){
+            var html = '<div class="scroll-container" id="data-table-'+ data_table.id+'"> <h4 style="text-align:center;">'+data_table.name+
+            '</h4><hot-table settings="default_table_setting" datarows="compare_report.content.data['+data_table.id+'].data"></hot-table></div>';
+            var content = $compile(html)($scope);
+            $("#raw_data_content_compare").append(content);
+        }
+        else{
+            var html = '<div class="scroll-container" id="data-table-'+ data_table.id+'"> <h4 style="text-align:center;">'+data_table.name+
+            '</h4><hot-table settings="default_table_setting" datarows="selected_report.content.data['+data_table.id+'].data"></hot-table></div>';
+            var content = $compile(html)($scope);
+            $("#raw_data_content").append(content);
+        }
     };
     $scope.render_all = function(){
         $scope.page1 = 'all';

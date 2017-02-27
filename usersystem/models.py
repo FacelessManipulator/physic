@@ -194,9 +194,12 @@ class Report(models.Model):
     data_processing = models.TextField(default='')
     thinking = models.TextField(default='')
     is_submit = models.BooleanField(default=False)
+    submit_time = models.DateTimeField(auto_now_add=True)
+    corrected_time = models.DateTimeField(auto_now_add=True)
     back_reason = models.TextField(default='')
 
     def get_dict(self, simple=True):
+        LOCAL_TIME_DELTA = datetime.timedelta(hours=8)
         dic = {}
         dic['rid'] = self.rid
         dic['is_corrected'] = self.is_corrected
@@ -209,6 +212,8 @@ class Report(models.Model):
             dic['name'] = self.user.name
             dic['closed'] = not self.experiment.base.is_active or \
             dic['experiment'].get('end_date', '2050-01-01') < str(datetime.date.today())
+            dic['submit_time'] = (self.submit_time+LOCAL_TIME_DELTA).strftime('%Y-%m-%d %H:%M')
+            dic['corrected_time'] = (self.corrected_time+LOCAL_TIME_DELTA).strftime('%Y-%m-%d %H:%M')
         except:
             pass
         if not simple:

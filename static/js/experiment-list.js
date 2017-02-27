@@ -193,6 +193,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
             width:"99%",
             value:data,
             showCopyPasteToolbar: false,
+            showInsertObjectToolbar: true,
             paste: function(evt, ui){
                 $("#ajax-state").text("粘贴禁止");
 
@@ -233,7 +234,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                                 action: '_buttonIconAction'
                             }
                         }
-                    }]
+                    },]
                 }
             ]
         });
@@ -403,7 +404,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
         $scope.page1 = 'report';
         var blocks = ['objective', 'process', 'instrument', 'principle','data_processing', 'thinking', 'raw_data'];
         for(var i in blocks){
-            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]);
+            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]+'<div style="height: 40px;"></div>');
         }
         $("#teacher-head-img").attr('src',$scope.selected_report.content.teacher_photo);
         for(var i in $scope.selected_report.content.data.tables){

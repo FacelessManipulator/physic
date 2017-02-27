@@ -129,14 +129,17 @@
                         </div>
                         <div style="width:100%;text-align:center;">
                             <div style="float:left">
-                                <span class="prev-next-span" ng-if="selected_report.prev" ng-bind-html="'上一份:'+selected_report.prev.content.student_name"></span>
+                                <a class="prev-next-span" ng-if="selected_report.prev" ng-bind-html="'上一份:'+selected_report.prev.content.student_name" ng-click="changeReport(selected_report.prev.rid)"></a>
                             </div>
                             <span class="prev-next-span" style="float:none;" ng-if="selected_report.rid" ng-bind-html="'当前报告:'+selected_report.content.student_name"></span>
-                            <div style="float:right">
-                                <a style="float:right;background:#3498db" class="circle-button" ng-if="selected_report.next" href="#" ng-click="changeReport(selected_report.next.rid)" title="查看下一份报告"><i class="icon-angle-right"></i></a>
-                                <a style="float:right" class="circle-button" href="#" ng-click="correct()" title="批改下一份报告"><i class="icon-ok"></i></a>
-                                <a ng-if="selected_report.content.is_submit" id="push-back-btn" style="float:right;background:#e74c3c" class="circle-button" href="#" ng-click="submitDialog.open=true" title="退回报告" ><i class="icon-ban-circle"></i></a>
-                                <a style="float:right;background:#3498db" class="circle-button" ng-if="selected_report.prev" href="#" ng-click="changeReport(selected_report.prev.rid)" title="查看上一份报告"><i class="icon-angle-left"></i></a>
+                            <span class="prev-next-span" style="float:none;" ng-if="compare_mode&&compare_report.rid" ng-bind-html="'对照报告:'+compare_report.content.student_name"></span>
+                            <div style="position:fixed;right:0;top:35%;background:rgba(0,0,0,0.2);width:50px;z-index:999;">
+                                <button style="float:right;" href="#" class="circle-button btn btn-info" ng-disabled="!selected_report.next" href="#" ng-click="changeReport(selected_report.next.rid)" title="查看下一份报告"><i class="icon-angle-right"></i></button>
+                                <button style="float:right" class="circle-button btn btn-success" href="#" ng-click="correct()" title="批改完成"><i class="icon-ok"></i></button>
+                                <button ng-disabled="!selected_report.content.is_submit" id="push-back-btn" style="float:right;" class="circle-button btn btn-danger" href="#" ng-click="submitDialog.open=true" title="退回报告" ><i class="icon-ban-circle"></i></button>
+                                <button style="float:right;" class="circle-button btn btn-info" ng-disabled="!selected_report.prev" href="#" ng-click="changeReport(selected_report.prev.rid)" title="查看上一份报告"><i class="icon-angle-left"></i></button>
+                                <button style="float:right;" href="#" class="circle-button btn btn-warning" ng-show="!compare_mode" href="#" ng-click="compare_mode = true;compare_report = selected_report;changeReport(compare_report.rid, true);" title="打开对照模式"><i class="icon-eye-open"></i></button>
+                                <button style="float:right;background:#e74c3c" href="#" class="circle-button" ng-show="compare_mode" href="#" ng-click="compare_mode = false;" title="关闭对照模式"><i class="icon-eye-close"></i></button>
                                 <!--<span class="prev-next-span" ng-if="selected_report.next" ng-bind-html="'下一份:'+selected_report.next.content.student_name"></span>-->
                                 <!--<span class="prev-next-span" ng-show="!selected_report.next" id="get_next_span">获得下一份</span>-->
                             </div>
@@ -150,6 +153,10 @@
                             </dialog>
 
                         </div>
+                        <div style="position:fixed;right:50px;top:45%;background:rgba(0,0,0,0.2);width:50px;z-index:999;" ng-show="compare_mode">
+                            <button style="float:right;" href="#" class="circle-button btn btn-info" ng-disabled="!compare_report.prev" href="#" ng-click="changeReport(compare_report.prev.rid,true)" title="对比上一份报告"><i class="icon-angle-up"></i></button>
+                            <button style="float:right;" href="#" class="circle-button btn btn-info" ng-disabled="!compare_report.next" href="#" ng-click="changeReport(compare_report.next.rid,true)" title="对比下一份报告"><i class="icon-angle-down"></i></button>
+                        </div>
                     </div>
                     <div class="row block" ng-show="!calculator_hidden">
                         <div class="title">
@@ -160,7 +167,7 @@
                             </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-9">
+                        <div ng-class="{true:'col-md-12',false:'col-md-9'}[compare_mode]">
                             <div class="row block">
                                 <div class="title">
                                     <span>原始数据</span>
@@ -178,7 +185,8 @@
                                         </ig-combo>
                                     </div>
                                 </div>
-                                <div class="content" id="raw_data_content"></div>
+                                <div ng-class="{true:'col-md-6',false:'content'}[compare_mode]" id="raw_data_content"></div>
+                                <div id="raw_data_content_compare" class="col-md-6" ng-show="compare_mode"></div>
                             </div>
                             {% if Config.show_extra_block %}
                             <div class="row block">
@@ -213,7 +221,8 @@
                                         <button class="btn btn-info btn-sm" ng-click="add_tag('objective_content')">添加标签</button>
                                     </div>
                                 </div>
-                                <div class="content drag-wrap" id="objective_content"></div>
+                                <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="objective_content"></div>
+                                <div id="objective_content_content_compare" class="col-md-6" ng-show="compare_mode"></div>
                             </div>
 
 
@@ -249,7 +258,8 @@
                                         <button class="btn btn-info btn-sm" ng-click="add_tag('principle_content')">添加标签</button>
                                     </div>
                                 </div>
-                                <div class="content" id="principle_content"></div>
+                                <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="principle_content"></div>
+                                <div id="principle_content_content_compare" class="col-md-6" ng-show="compare_mode"></div>
                             </div>
 
                             <div class="row block">
@@ -284,7 +294,8 @@
                                         <button class="btn btn-info btn-sm" ng-click="add_tag('process_content')">添加标签</button>
                                     </div>
                                 </div>
-                                <div class="content drag-wrap" id="process_content"></div>
+                            <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="process_content"></div>
+                                <div id="process_content_compare" class="col-md-6" ng-show="compare_mode"></div>
                             </div>
 
                             {% endif %}
@@ -365,7 +376,8 @@
                                         <button class="btn btn-info btn-sm" ng-click="addTagDialog.clear('data_processing');addTagDialog.open=true;">添加标签</button>
                                     </div>
                                 </div>
-                                <div class="content drag-wrap" id="data_processing_content"></div>
+                             <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="data_processing_content"></div>
+                                <div id="data_processing_content_compare" class="col-md-6" ng-show="compare_mode"></div>
                             </div>
 
 
@@ -377,8 +389,9 @@
                                         <button class="btn btn-info btn-sm" ng-click="addTagDialog.clear('instrument');addTagDialog.open=true;">添加标签</button>
                                     </div>
                                 </div>
-                                <div class="content drag-wrap" id="instrument_content"></div>
-                            </div>
+                            <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="instrument_content"></div>
+                                <div id="instrument_content_compare" class="col-md-6" ng-show="compare_mode"></div>
+                           </div>
 
 
                             <div class="row block">
@@ -389,11 +402,12 @@
                                         <button class="btn btn-info btn-sm" ng-click="addTagDialog.clear('thinking');addTagDialog.open=true;">添加标签</button>
                                     </div>
                                 </div>
-                                <div class="content drag-wrap" id="thinking_content"></div>
-                            </div>
+                            <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="thinking_content"></div>
+                                <div id="thinking_content_compare" class="col-md-6" ng-show="compare_mode"></div>
+                          </div>
 
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3" ng-show="!compare_mode">
                             <div class="row block">
                                 <div class="title">
                                     <span>实验分数</span>

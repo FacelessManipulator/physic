@@ -17,6 +17,7 @@ class BaseExperiment(models.Model):
     start_time = models.DateField(default=timezone.now)
     is_active = models.BooleanField(default=False)
     full = models.IntegerField(default=100)
+    chargedby = models.ForeignKey("usersystem.UserBaseInfo", related_name='charge', on_delete=models.SET_NULL, null=True)
 
     def get_dict(self, simple=True):
         dic = {}
@@ -28,6 +29,7 @@ class BaseExperiment(models.Model):
         dic['created_time'] = str(self.created_time)
         dic['start_time'] = str(self.start_time)
         dic['full'] = self.full
+        dic['charged_by'] = self.chargedby.name if self.chargedby is not None else "未指定"
         if not simple:
             dic['sub_class'] = [exp.get_dict(simple=False) for exp in self.experience.all()]
         else:
