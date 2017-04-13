@@ -140,6 +140,9 @@
                                 <button style="float:right;" class="circle-button btn btn-info" ng-disabled="!selected_report.prev" href="#" ng-click="changeReport(selected_report.prev.rid)" title="查看上一份报告"><i class="icon-angle-left"></i></button>
                                 <button style="float:right;" href="#" class="circle-button btn btn-warning" ng-show="!compare_mode" href="#" ng-click="compare_mode = true;compare_report = selected_report;changeReport(compare_report.rid, true);" title="打开对照模式"><i class="icon-eye-open"></i></button>
                                 <button style="float:right;background:#e74c3c" href="#" class="circle-button" ng-show="compare_mode" href="#" ng-click="compare_mode = false;" title="关闭对照模式"><i class="icon-eye-close"></i></button>
+
+                                <button style="float:right;" href="#" class="circle-button btn btn-success" ng-show="!brush_mode" href="#" ng-click="brush_toggle(1)" title="使用画笔"><i class="icon-pencil"></i></button>
+                                <button style="float:right;background:#e74c3c" href="#" class="circle-button" ng-show="brush_mode" href="#" ng-click="brush_toggle(0)" title="关闭画笔"><i class="icon-pencil"></i></button>
                                 <!--<span class="prev-next-span" ng-if="selected_report.next" ng-bind-html="'下一份:'+selected_report.next.content.student_name"></span>-->
                                 <!--<span class="prev-next-span" ng-show="!selected_report.next" id="get_next_span">获得下一份</span>-->
                             </div>
@@ -185,6 +188,10 @@
                                         </ig-combo>
                                     </div>
                                 </div>
+                                <div class="brush-area" ng-show="raw_data.brush">
+                                    <canvas class="brush-canvas-f" id="raw_data-1"></canvas>
+                                    <canvas class="brush-canvas-b" id="raw_data-2"></canvas>
+                                </div>
                                 <div ng-class="{true:'col-md-6',false:'content'}[compare_mode]" id="raw_data_content"></div>
                                 <div id="raw_data_content_compare" class="col-md-6" ng-show="compare_mode"></div>
                             </div>
@@ -220,6 +227,10 @@
 
                                         <button class="btn btn-info btn-sm" ng-click="add_tag('objective_content')">添加标签</button>
                                     </div>
+                                </div>
+                                <div class="brush-area" ng-show="objective.brush">
+                                    <canvas class="brush-canvas-f" id="objective-1"></canvas>
+                                    <canvas class="brush-canvas-b" id="objective-2"></canvas>
                                 </div>
                                 <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="objective_content"></div>
                                 <div id="objective_content_content_compare" class="col-md-6" ng-show="compare_mode"></div>
@@ -258,8 +269,14 @@
                                         <button class="btn btn-info btn-sm" ng-click="add_tag('principle_content')">添加标签</button>
                                     </div>
                                 </div>
-                                <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="principle_content"></div>
+                                <div class="brush-area" ng-show="principle.brush">
+                                    <canvas  class="brush-canvas-f" id="principle-1"></canvas>
+                                    <canvas  class="brush-canvas-b" id="principle-2"></canvas>
+                                </div>
+                                <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="principle_content">
+                                </div>
                                 <div id="principle_content_content_compare" class="col-md-6" ng-show="compare_mode"></div>
+
                             </div>
 
                             <div class="row block">
@@ -293,6 +310,11 @@
 
                                         <button class="btn btn-info btn-sm" ng-click="add_tag('process_content')">添加标签</button>
                                     </div>
+                                </div>
+
+                                <div class="brush-area" ng-show="process.brush">
+                                    <canvas  class="brush-canvas-f" id="process-1"></canvas>
+                                    <canvas  class="brush-canvas-b" id="process-2"></canvas>
                                 </div>
                             <div ng-class="{true:'col-md-6 drag-wrap',false:'content drag-wrap'}[compare_mode]" id="process_content"></div>
                                 <div id="process_content_compare" class="col-md-6" ng-show="compare_mode"></div>
@@ -369,6 +391,11 @@
                                 </ul>
                             </popup>
                             <div class="row block" ng-contextmenu="contentContextMenuPopup={open: $event, block:'data_processing'}">
+
+                                <div class="brush-area" ng-show="data_processing.brush">
+                                    <canvas class="brush-canvas-f" id="data_processing-1"></canvas>
+                                    <canvas class="brush-canvas-b" id="data_processing-2"></canvas>
+                                </div>
                                 <div class="title">
                                     <span>数据处理</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">
@@ -382,6 +409,10 @@
 
 
                             <div class="row block">
+                                <div class="brush-area" ng-show="instrument.brush">
+                                    <canvas class="brush-canvas-f" id="instrument-1"></canvas>
+                                    <canvas class="brush-canvas-b" id="instrument-2"></canvas>
+                                </div>
                                 <div class="title">
                                     <span>实验体会</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">
@@ -395,6 +426,10 @@
 
 
                             <div class="row block">
+                                <div class="brush-area" ng-show="thinking.brush">
+                                    <canvas class="brush-canvas-f" id="thinking-1"></canvas>
+                                    <canvas class="brush-canvas-b" id="thinking-2"></canvas>
+                                </div>
                                 <div class="title">
                                     <span>思考题</span>
                                     <div class="add-tag" style="float:right" ng-show="selected_report.content.is_submit">

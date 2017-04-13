@@ -217,13 +217,13 @@ class Report(models.Model):
         except:
             pass
         if not simple:
-            dic['objective'] = self.objective
-            dic['process'] = self.process
-            dic['instrument'] = self.instrument
-            dic['principle'] = self.principle
-            dic['data_processing'] = self.data_processing
-            dic['thinking'] = self.thinking
-            dic['raw_data'] = self.raw_data
+            dic['objective'] = {'data':self.objective}
+            dic['process'] = {'data':self.process}
+            dic['instrument'] = {'data':self.instrument}
+            dic['principle'] = {'data':self.principle}
+            dic['data_processing'] = {'data':self.data_processing}
+            dic['thinking'] = {'data':self.thinking}
+            dic['raw_data'] = {'data':self.raw_data}
             dic['back_reason'] = self.back_reason
             try:
                 dic['user'] = self.user.get_dict()

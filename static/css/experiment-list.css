@@ -397,3 +397,22 @@ body{
 .circle-tag:hover>.tooltip-inner{
     visibility: visible;
 }
+.brush-area{
+    cursor: cell;
+    position: absolute;
+    z-index: 0;
+    width: auto;
+    height: auto;
+    bottom: 0px;
+    top: 50px;
+    left: 10px;
+    right: 10px;
+}
+.brush-canvas-f{
+    position: absolute;
+    z-index: 999;
+}
+.brush-canvas-b{
+    position: absolute;
+    z-index : 0;
+}

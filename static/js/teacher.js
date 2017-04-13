@@ -40,6 +40,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.page2 = '';
     $scope.editing_block = '';
     $scope.compare_mode = false;
+    $scope.brush_mode = false;
     $scope.compare_report = {'loaded':false, 'content':{}};
     $scope.submitDialog = {'open':false,'reason':''};
     $scope.default_table_setting = {contextMenu: true,formulas: true,rowHeaders: true, colHeaders: true,
@@ -75,13 +76,13 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
     $scope.report_list_render = false;
     $scope.grade_editor_hidden = true;
     $scope.active_choice = [{"key":'false', 'value':'否'},{"key":'true', 'value':'是'},];
-    $scope.objective={'editing':false, 'loaded':false};
-    $scope.process={'editing':false, 'loaded':false};
-    $scope.instrument={'editing':false, 'loaded':false};
-    $scope.principle={'editing':false, 'loaded':false};
-    $scope.data_processing={'editing':false, 'loaded':false};
-    $scope.thinking={'editing':false, 'loaded':false};
-    $scope.raw_data={'editing':false, 'loaded':false};
+    $scope.objective={'editing':false, 'loaded':false, 'brush': false};
+    $scope.process={'editing':false, 'loaded':false, 'brush': false};
+    $scope.instrument={'editing':false, 'loaded':false, 'brush': true};
+    $scope.principle={'editing':false, 'loaded':false, 'brush': false};
+    $scope.data_processing={'editing':false, 'loaded':false, 'brush': true};
+    $scope.thinking={'editing':false, 'loaded':false, 'brush': true};
+    $scope.raw_data={'editing':false, 'loaded':false, 'brush': true};
     $scope.experiments = {"loaded":false, 'content':[]};
     $scope.selected_experiment = {'loaded':false, 'content':{}};
     $scope.selected_report = {'loaded':false, 'content':{}};
@@ -835,7 +836,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         $scope.page1 = 'report';
         var blocks = ['objective', 'process', 'instrument', 'principle','data_processing', 'thinking', 'raw_data'];
         for(var i in blocks){
-            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]+'<div style="height: 40px;"></div>');
+            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]].data+'<div style="height: 40px;"></div>');
         }
         for(var i in $scope.selected_report.content.data.tables){
             $scope.render_data_table($scope.selected_report.content.data[$scope.selected_report.content.data.tables[i]]);
@@ -854,6 +855,7 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         });
         $scope.generateGradeChat("chart2-report-grade");
         $scope.render_tags();
+        $scope.brush_toggle(0);
     };
     $scope.generateCorrectLink = function(jump, all){
         if(typeof(all) === 'undefined')
@@ -1036,6 +1038,22 @@ teacherApp.controller('teacherCtrl',function($scope,$http, $compile,$timeout,uiC
         $scope.modifyData('/user/push-back',{'rid':$scope.selected_report.rid,'reason':$scope.submitDialog.reason});
         //$scope.correct();
     };
+    $scope.brush_toggle = function(opt){
+        if(opt == 1){
+            $scope.brush_mode = true;
+            createBrush("raw_data", $scope.selected_report.content.raw_data);
+            createBrush("data_processing", $scope.selected_report.content.data_processing);
+            createBrush("instrument", $scope.selected_report.content.instrument);
+            createBrush("thinking", $scope.selected_report.content.thinking);
+            $(".brush-canvas-f").attr("style", "z-index:999");
+            $(".brush-area").attr("style", "z-index:999");
+        }
+        else{
+            $scope.brush_mode = false;
+            $(".brush-canvas-f").attr("style", "z-index:0");
+            $(".brush-area").attr("style", "z-index:0");
+        }
+    }
     $scope.alertOnEventClick = function(date, jsEvent, view){
         $scope.changeExperiment(date.eid);
     };

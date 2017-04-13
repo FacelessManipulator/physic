@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^delete$', views.delete_user),
     url(r'^modify$', views.modify_user),
     url(r'^report$', views.get_report),
+    # url(r'^report/brush$', views.get_report),
     url(r'^report/modify$', views.modify_report),
     url(r'^report/image$', views.receive_image),
     url(r'^report/file$', views.receive_file),

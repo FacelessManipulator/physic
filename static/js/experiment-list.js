@@ -274,11 +274,11 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
     };
     $scope.editor_edit = function(block){
         if(!$scope[block].loaded){
-            $scope.generateHtmlEditor(block, $scope.selected_report.content[block]);
+            $scope.generateHtmlEditor(block, $scope.selected_report.content[block].data);
             $scope[block].loaded = true;
         }
         else{
-            $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block],'html');
+            $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block].data,'html');
             $timeout(function(){
                 $("#"+block+"_editor").igHtmlEditor("resizeWorkspace");
             },100);
@@ -287,11 +287,11 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
     };
     $scope.raw_data_editor_edit = function(block){
         if(!$scope[block].loaded){
-            $scope.generateDateEditor(block, $scope.selected_report.content[block]);
+            $scope.generateDateEditor(block, $scope.selected_report.content[block].data);
             $scope[block].loaded = true;
         }
         else{
-            $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block],'html');
+            $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block].data,'html');
             $timeout(function(){
                 $("#"+block+"_editor").igHtmlEditor("resizeWorkspace");
             },100);
@@ -299,13 +299,13 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
         $scope.editing_block = block;
     };
     $scope.editor_save = function(block){
-        $scope.selected_report.content[block] = $("#" +block+ "_editor").igHtmlEditor("getContent", "html");
-        $("#"+block+"_content").html($scope.selected_report.content[block]);
-        $scope.modifyData('/user/report/modify',{'block':block,'rid':$scope.selected_report.rid , 'content': $scope.selected_report.content[block]});
+        $scope.selected_report.content[block].data = $("#" +block+ "_editor").igHtmlEditor("getContent", "html");
+        $("#"+block+"_content").html($scope.selected_report.content[block].data);
+        $scope.modifyData('/user/report/modify',{'block':block,'rid':$scope.selected_report.rid , 'content': $scope.selected_report.content[block].data});
         $scope.editing_block = '';
     };
     $scope.editor_cancel = function(block){
-        $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block],'html');
+        $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block].data,'html');
         $scope.editing_block = '';
     };
     $scope.open_math_dialog = function(ui){
@@ -405,7 +405,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
         $scope.page1 = 'report';
         var blocks = ['objective', 'process', 'instrument', 'principle','data_processing', 'thinking', 'raw_data'];
         for(var i in blocks){
-            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]]+'<div style="height: 40px;"></div>');
+            $("#"+blocks[i]+"_content").html($scope.selected_report.content[blocks[i]].data+'<div style="height: 40px;"></div>');
         }
         $("#teacher-head-img").attr('src',$scope.selected_report.content.teacher_photo);
         for(var i in $scope.selected_report.content.data.tables){
@@ -413,6 +413,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
         }
         if($scope.selected_report.closed&&$scope.selected_report.is_submit&&$scope.selected_report.is_corrected)
             $scope.render_tags();
+
     };
     $scope.changeReport = function(rid){
         if(!$scope.reports.loaded){
