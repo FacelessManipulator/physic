@@ -5,7 +5,7 @@ import views
 urlpatterns = [
     url(r'^website$', views.opt_website_setting),
     url(r'^login$', views.m_login,name='usersystem-login'),
-    url(r'^regist$', views.RegisterView.as_view(),name='usersystem-regist'),
+    # url(r'^regist$', views.RegisterView.as_view(),name='usersystem-regist'),
     url(r'^reset-password$', views.reset_password),
     url(r'^temp$',views.tempView,name='usersystem-temp'),
     url(r'^capture$', views.g_capture,name='usersystem-capture'),
