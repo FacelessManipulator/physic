@@ -1,0 +1,5 @@
+migrations/*
+/physicsLab1000/settings.py
+/media/*
+uwsgi.ini
+*.pyc
