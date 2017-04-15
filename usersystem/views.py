@@ -3,9 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.http.response import HttpResponse, JsonResponse
 from models import UserBaseInfo, Report, WebsiteConfig, ReportTag, Institute, Major, StudentClass
-from forms import RegisterForm,LoginForm
-from django.views.generic.edit import FormView
-from django.core.urlresolvers import reverse_lazy
 from captcha.models import CaptchaStore,get_safe_now
 from django.contrib.auth.models import User
 from captcha.helpers import captcha_image_url
@@ -29,33 +26,33 @@ def valifiedCapture(request):
 def tempView(request):
     return render(request,'usersystem/login_t.html')
 
-class RegisterView(FormView):
-    template_name = 'usersystem/register.html'
-    form_class = RegisterForm
-    success_url = reverse_lazy('/login')
-    def form_valid(self, form):
-        form.save()
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password')
-        user = authenticate(username=username, password=password)
-        login(self.request, user)
-        return super(RegisterView, self).form_valid(form)
-
-    def form_invalid(self, form):
-        return super(RegisterView, self).form_invalid(form)
-
-class LoginView(FormView):
-    template_name = 'login_t.html'
-    form_class = LoginForm
-    success_url =  reverse_lazy('/login')
-    def form_valid(self, form):
-        user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
-        if user is not None:
-            if user.is_active:
-                login(self.request, user)
-                return super(LoginView,self).form_valid()
-        else:
-            return HttpResponse("error username or password")
+# class RegisterView(FormView):
+#     template_name = 'usersystem/register.html'
+#     form_class = RegisterForm
+#     success_url = reverse_lazy('/login')
+#     def form_valid(self, form):
+#         form.save()
+#         username = form.cleaned_data.get('username')
+#         password = form.cleaned_data.get('password')
+#         user = authenticate(username=username, password=password)
+#         login(self.request, user)
+#         return super(RegisterView, self).form_valid(form)
+#
+#     def form_invalid(self, form):
+#         return super(RegisterView, self).form_invalid(form)
+#
+# class LoginView(FormView):
+#     template_name = 'login_t.html'
+#     form_class = LoginForm
+#     success_url =  reverse_lazy('/login')
+#     def form_valid(self, form):
+#         user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+#         if user is not None:
+#             if user.is_active:
+#                 login(self.request, user)
+#                 return super(LoginView,self).form_valid()
+#         else:
+#             return HttpResponse("error username or password")
 
 
 def m_login(request):
