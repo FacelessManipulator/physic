@@ -3,14 +3,23 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.http.response import HttpResponse, JsonResponse
 from models import UserBaseInfo, Report, WebsiteConfig, ReportTag, Institute, Major, StudentClass
-from captcha.models import CaptchaStore,get_safe_now
+from captcha.models import CaptchaStore
 from django.contrib.auth.models import User
 from captcha.helpers import captcha_image_url
 from django.contrib.auth.decorators import login_required
 import utils, json, datetime
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings as sts
 # Create your views here.
 
+def get_safe_now():
+    try:
+        from django.utils.timezone import utc
+        if sts.USE_TZ:
+            return datetime.datetime.utcnow().replace(tzinfo=utc)
+    except:
+        pass
+    return datetime.datetime.now()
 
 def valifiedCapture(request):
     captureKey = request.POST.get('captureKey', '')
