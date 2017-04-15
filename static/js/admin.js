@@ -474,7 +474,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
             u_columns = [
                     { headerText: "账号", key: "username", dataType: "string", width: "10%" },
                     { headerText: "姓名", key: "name", dataType: "string", width: "10%" },
-                    { headerText: "学院", key: "institute", dataType: "string", width: "10%" },
+                    { headerText: "学部/学院", key: "institute", dataType: "string", width: "10%" },
                     { headerText: "专业及班级", key: "major_and_class", dataType: "string", width: "20%" },
 //                    { headerText: "班级", key: "student_class", dataType: "string", width: "10%" },
 

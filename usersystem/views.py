@@ -318,12 +318,14 @@ def modify_user(request):
         major = request.POST.get('major','')
         student_class = request.POST.get('student_class','')
         address = request.POST.get('address','')
+        major_and_class = request.POST.get('major_and_class','')
         try:
             user = User.objects.get(username=username)
             user = user.userBaseInfo
             user.name = name
             user.phone = phone
             user.address = address
+            user.major_and_class = major_and_class
             if email is not None:
                 user.user.email = email
             user.user.save()
