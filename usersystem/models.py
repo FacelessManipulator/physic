@@ -180,8 +180,8 @@ class UserBaseInfo(models.Model):
 
 
 class Report(models.Model):
-    experiment = models.ForeignKey('experiment.Experiment', null=True, blank=True, related_name='report',
-                                   on_delete=models.CASCADE)
+    # experiment = models.ForeignKey('experiment.Experiment', null=True, blank=True, related_name='report',
+    #                                on_delete=models.CASCADE)
     user = models.ForeignKey('UserBaseInfo', related_name='report', on_delete=models.CASCADE)
     rid = models.AutoField(primary_key=True)
     is_corrected = models.BooleanField(default=False)
