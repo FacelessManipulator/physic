@@ -109,7 +109,7 @@ class StudentClass(models.Model):
 class UserBaseInfo(models.Model):
     user = models.OneToOneField('auth.User', related_name='userBaseInfo', on_delete=models.CASCADE)
     student_class = models.ForeignKey('StudentClass', related_name='user', on_delete=models.SET_NULL, blank=True, null=True)
-    # experiment = models.ManyToManyField('experiment.Experiment', related_name='user')
+    experiment = models.ManyToManyField('experiment.Experiment', related_name='user')
     created = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128, default='anonymous')
     phone = models.CharField(max_length=64, default='')
@@ -180,8 +180,8 @@ class UserBaseInfo(models.Model):
 
 
 class Report(models.Model):
-    # experiment = models.ForeignKey('experiment.Experiment', null=True, blank=True, related_name='report',
-    #                                on_delete=models.CASCADE)
+    experiment = models.ForeignKey('experiment.Experiment', null=True, blank=True, related_name='report',
+                                   on_delete=models.CASCADE)
     user = models.ForeignKey('UserBaseInfo', related_name='report', on_delete=models.CASCADE)
     rid = models.AutoField(primary_key=True)
     is_corrected = models.BooleanField(default=False)
