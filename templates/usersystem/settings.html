@@ -84,27 +84,34 @@
 
                         <div class="form-group ng-class:{true:'has-error',false:''}[basicSettingForm.phone.$error.pattern]">
                             <label for="phone">手机号</label>
-                            <input name="phone" type="text" ng-pattern="'^\\d*$'" ng-model="phone" class="form-control" id="phone" placeholder="手机号" value="{{User.phone|default_if_none:''}}"/>
+                            <input name="phone" type="text" ng-pattern="'^\\d*$'" class="form-control" id="phone" placeholder="手机号" value="{{User.phone|default_if_none:''}}"/>
                             <div class="white-block">
                                 <span class="error" ng-show="basicSettingForm.phone.$error.pattern">请填写数字</span>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="phone">学院</label>
+                            <label for="phone">学部/学院</label>
                             <div id="institute-combo"></div>
                         </div>
 
                         <div class="form-group">
-                            <label for="phone">专业</label>
-                            <div id="major-combo"></div>
+                            <label for="major_and_class">专业及班级</label>
+                            <input name="major_and_class" type="text" class="form-control" id="major_and_class" placeholder="专业及班级" value="{{User.major_and_class|default_if_none:''}}"/>
+                            <!--<div class="white-block">-->
+                                <!--<span class="error" ng-show="basicSettingForm.phone.$error.pattern">请填写数字</span>-->
+                            <!--</div>-->
                         </div>
+                        <!--<div class="form-group">-->
+                            <!--<label for="phone">专业</label>-->
+                            <!--<div id="major-combo"></div>-->
+                        <!--</div>-->
 
-                        <div class="form-group">
-                            <label for="phone">班级</label>
-                            <div id="class-combo"></div>
-                            <input name="cid" ng-model="selected_class.cid" hidden>
-                        </div>
+                        <!--<div class="form-group">-->
+                            <!--<label for="phone">班级</label>-->
+                            <!--<div id="class-combo"></div>-->
+                            <!--<input name="cid" ng-model="selected_class.cid" hidden>-->
+                        <!--</div>-->
                     </form>
                 </div>
 

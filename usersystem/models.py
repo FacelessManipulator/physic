@@ -30,8 +30,8 @@ class WebsiteConfig(models.Model):
     website_allow_change = ['default_password', 'sitename', 'start_week_day',
                             'report_editing_day', 'WebsiteName', 'WebsiteEmailAccount',
                             'WebsiteEmailPassword', ]
-    user_settings_allow_super_change = ['name', 'email', 'phone']
-    user_settings_allow_user_change = ['phone']
+    user_settings_allow_super_change = ['name', 'email', 'phone', 'major_and_class']
+    user_settings_allow_user_change = ['phone', 'major_and_class']
     report_content_editable = ['objective', 'process', 'instrument', 'principle',
                                'data_processing', 'thinking', 'raw_data']
     # APP变量设置
@@ -118,6 +118,7 @@ class UserBaseInfo(models.Model):
     address = models.CharField(max_length=1024, default='')
     is_email_active = models.BooleanField(default=False)
     is_account_active = models.BooleanField(default=False)
+    major_and_class = models.CharField(max_length=1024, default='')
 
     class Meta:
         ordering = ('created',)
@@ -155,6 +156,7 @@ class UserBaseInfo(models.Model):
         dic['created'] = str(self.created)
         dic['address'] = self.address
         dic['is_active'] = self.is_account_active
+        dic['major_and_class'] = self.major_and_class
         if self.student_class is not None:
             dic['student_class'] = self.student_class.name
             dic['major'] = self.student_class.major.name

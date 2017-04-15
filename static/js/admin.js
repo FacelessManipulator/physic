@@ -475,8 +475,8 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
                     { headerText: "账号", key: "username", dataType: "string", width: "10%" },
                     { headerText: "姓名", key: "name", dataType: "string", width: "10%" },
                     { headerText: "学院", key: "institute", dataType: "string", width: "10%" },
-                    { headerText: "专业", key: "major", dataType: "string", width: "10%" },
-                    { headerText: "班级", key: "student_class", dataType: "string", width: "10%" },
+                    { headerText: "专业及班级", key: "major_and_class", dataType: "string", width: "20%" },
+//                    { headerText: "班级", key: "student_class", dataType: "string", width: "10%" },
 
                     { headerText: "邮箱", key: "email", dataType: "string", width: "15%"},
                     { headerText: "电话", key: "phone", dataType: "string", width: "10%" },

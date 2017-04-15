@@ -24,31 +24,31 @@ settingApp.controller('settingCtrl',function($scope,$http, Upload,$timeout){
                  return ary[i];
          }
     };
-    $scope.changeInstitute = function(event, ui){
-        $scope.selected_institute = ui.items[0].data;
-        if(!$scope.selected_institute.major[0])
-            $scope.selected_major = $scope.selected_institute.major[0];
-        $("#major-combo").igCombo('option', 'dataSource', $scope.selected_institute.major);
-        $("#major-combo").igCombo('dataBind');
-    };
-    $scope.changeMajor = function(event, ui){
-        $scope.selected_major = ui.items[0].data;
-        $("#class-combo").igCombo('option', 'dataSource', $scope.selected_major.student_class);
-        $("#class-combo").igCombo('dataBind');
-    };
-    $scope.changeClass = function(event, ui){
-        $scope.selected_class = ui.items[0].data;
-    };
+//    $scope.changeInstitute = function(event, ui){
+//        $scope.selected_institute = ui.items[0].data;
+//        if(!$scope.selected_institute.major[0])
+//            $scope.selected_major = $scope.selected_institute.major[0];
+//        $("#major-combo").igCombo('option', 'dataSource', $scope.selected_institute.major);
+//        $("#major-combo").igCombo('dataBind');
+//    };
+//    $scope.changeMajor = function(event, ui){
+//        $scope.selected_major = ui.items[0].data;
+//        $("#class-combo").igCombo('option', 'dataSource', $scope.selected_major.student_class);
+//        $("#class-combo").igCombo('dataBind');
+//    };
+//    $scope.changeClass = function(event, ui){
+//        $scope.selected_class = ui.items[0].data;
+//    };
     $scope.render = function(){
         if('undefined' != typeof(m_class)){
             $scope.selected_institute = $scope.findDictFromArray($scope.institute, 'iid', m_institute);
-            $scope.selected_major = $scope.findDictFromArray($scope.selected_institute.major, 'mid', m_major);
-            $scope.selected_class = $scope.findDictFromArray($scope.selected_major.student_class, 'cid', m_class);
+//            $scope.selected_major = $scope.findDictFromArray($scope.selected_institute.major, 'mid', m_major);
+//            $scope.selected_class = $scope.findDictFromArray($scope.selected_major.student_class, 'cid', m_class);
         }
         else{
             $scope.selected_institute = $scope.institute[0];
-            $scope.selected_major = $scope.selected_institute.major[0];
-            $scope.selected_class = $scope.selected_major.student_class[0];
+//            $scope.selected_major = $scope.selected_institute.major[0];
+//            $scope.selected_class = $scope.selected_major.student_class[0];
         }
             $("#institute-combo").igCombo({
                 mode:"dropdown",
@@ -58,40 +58,40 @@ settingApp.controller('settingCtrl',function($scope,$http, Upload,$timeout){
                 textKeyType:"string",
                 textKey:"name",
                 enableClearButton:false,
-                selectionChanged: $scope.changeInstitute,
+//                selectionChanged: $scope.changeInstitute,
                 initialSelectedItems : [
                   { value: $scope.selected_institute.iid },
                 ],
                 width: "100%"
             });
-            $("#major-combo").igCombo({
-                mode:"dropdown",
-                dataSource:$scope.selected_institute.major,
-                valueKeyType:"int",
-                valueKey:"mid",
-                textKeyType:"string",
-                textKey:"name",
-                enableClearButton:false,
-                selectionChanged: $scope.changeMajor,
-                initialSelectedItems : [
-                  { value: $scope.selected_major.mid },
-                ],
-                width: "100%"
-            });
-            $("#class-combo").igCombo({
-                mode:"dropdown",
-                dataSource:$scope.selected_major.student_class,
-                valueKeyType:"int",
-                valueKey:"cid",
-                textKeyType:"string",
-                textKey:"name",
-                enableClearButton:false,
-                selectionChanged: $scope.changeClass,
-                initialSelectedItems : [
-                  { value: $scope.selected_class.cid },
-                ],
-                width: "100%"
-            });
+//            $("#major-combo").igCombo({
+//                mode:"dropdown",
+//                dataSource:$scope.selected_institute.major,
+//                valueKeyType:"int",
+//                valueKey:"mid",
+//                textKeyType:"string",
+//                textKey:"name",
+//                enableClearButton:false,
+//                selectionChanged: $scope.changeMajor,
+//                initialSelectedItems : [
+//                  { value: $scope.selected_major.mid },
+//                ],
+//                width: "100%"
+//            });
+//            $("#class-combo").igCombo({
+//                mode:"dropdown",
+//                dataSource:$scope.selected_major.student_class,
+//                valueKeyType:"int",
+//                valueKey:"cid",
+//                textKeyType:"string",
+//                textKey:"name",
+//                enableClearButton:false,
+//                selectionChanged: $scope.changeClass,
+//                initialSelectedItems : [
+//                  { value: $scope.selected_class.cid },
+//                ],
+//                width: "100%"
+//            });
     };
     $scope.saveSettings = function(){
         $('#save-btn').html("提交中<i style='margin-left:10px;' class='icon-spinner icon-spin'></i>");
