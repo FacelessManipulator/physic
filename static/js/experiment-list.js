@@ -207,6 +207,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                 mathDialogInit('math-dialog');
                 $(ui.owner.workspace).contents().find("body").on({
                     "dragenter": $scope.handleDragEnter,
+                    "dragover": $scope.handleDragEnter,
                     "dragleave": $scope.handleDragLeave
                 });
             },
@@ -261,6 +262,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                 mathDialogInit('math-dialog');
                 $(ui.owner.workspace).contents().find("body").on({
                     "dragenter": $scope.handleDragEnter,
+                    "dragover": $scope.handleDragEnter,
                     "dragleave": $scope.handleDragLeave
                 });
             },
