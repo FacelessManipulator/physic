@@ -22,6 +22,7 @@ adminApp.controller('adminCtrl',function($scope,$http, Upload,$compile){
     $scope.csvPopup = {open:{'teacher':false,'student':false}};
     $scope.ExperimentCsvPopup = {open:false};
     $scope.ExperimentImportCsvPopup = {open:false};
+    $scope.notice = {open: false, msg:''};
     $scope.csvDialog = {open:{'teacher':false,'student':false},count:0,successNum:0,failList:[],sample:[],csv:null,confirm:function(group){
         if(this.count>0){
             this.csv.forEach(function(e){

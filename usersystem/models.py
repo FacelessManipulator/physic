@@ -287,7 +287,8 @@ class ReportTag(models.Model):
 
 
 class AttachFile(models.Model):
-    report = models.ForeignKey('Report', related_name='file', on_delete=models.CASCADE)
+    report = models.ForeignKey('Report', related_name='file', on_delete=models.CASCADE, null=True)
+    news = models.ForeignKey('experiment.News', related_name='file', on_delete=models.CASCADE, null=True)
     attach_file = models.FileField(upload_to=report_file_upload_path_, blank=True, null=True)
     name = models.CharField(max_length=512, default='')
 
@@ -301,6 +302,7 @@ class AttachFile(models.Model):
     def get_dict(self):
         dic = {}
         try:
+            dic['fid'] = self.pk
             dic['name'] = self.name
             dic['url'] = self.attach_file.url
         except:

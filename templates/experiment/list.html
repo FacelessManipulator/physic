@@ -49,18 +49,13 @@
 </script>
 
 <script src="/static/js/math-editor.js"></script>
-<a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
+<!--<a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>-->
 
 <div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl as experimentCtrl">
   <notice ng-show="notice.open" duration="2000" top="80%" close="notice.open=false" fixed class="notice" ng-bind-html="notice.msg">
-</notice>
+  </notice>
   <div class="row">
     <div class="col-xs-3 col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
-      <div class="row" style="height:40px;">
-        <button class="btn btn-default" style="width:100%;text-align:right;border-radius:0px">
-          <i class="icon-reorder"></i>
-        </button>
-      </div>
       <div class="row head-img-div div-inverse">
         <img src="{% if User.photo %}{{User.photo.url}}{% else %}{{ '/static/images/head-img-default.jpg' }}{% endif%}" class="img-circle"/>
         <span>{{User.name}}</span>
@@ -84,9 +79,19 @@
       </div>
     </div>
     <div class="col-xs-offset-3 col-md-offset-2 col-xs-9 col-md-10">
-      <div class="row address div-inverse" style="position:fixed;z-index:999;">
-        <a href="javascript:;" id="ajax-state"></a>
-        <div class="btn-group" style="position:fixed;right:2px;">
+      <div class="row address div-inverse" style="position:fixed;border:0px;padding:0px;width:83.33%;z-index:1000;">
+        <div class="btn-group" style="position:absolute;top:-1px;" ng-show="page1=='all'">
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'all' && page2=='calendar']" ng-click="page2='calendar'">实验日程</button>
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'all' && page2=='explist']" ng-click="page2='explist'">实验列表</button>
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'all' && page2=='news']" ng-click="page2='news'">实验周知</button>
+        </div>
+        <div class="btn-group" style="position:absolute;top:-1px;" ng-show="page1=='report'">
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report' && page2=='raw_data']" ng-click="page2='raw_data';scrollTo('#raw_data');">原始数据</button>
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report' && page2=='data_processing']" ng-click="page2='data_processing';scrollTo('#data_processing');">数据处理</button>
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report' && page2=='instrument']" ng-click="page2='instrument';scrollTo('#instrument');">实验体会</button>
+          <button class="btn ng-class:{true:'btn-warning', false:'btn-inverse'}[page1 == 'report' && page2=='thinking']" ng-click="page2='thinking';scrollTo('#thinking');">实验思考</button>
+        </div>
+        <div class="btn-group" style="position:absolute;right:0px;top:-1px;">
           <button data-toggle="dropdown" type="button" class="btn btn-inverse btn-sm dropdown-toggle">{{User.name}}<span class="caret"></span></button>
           <ul role="menu" class="dropdown-menu dropdown-menu-inverse">
             <li><a href="/setting">个人设置</a></li>
@@ -98,27 +103,125 @@
       </div>
       <div style="height:40px;" id="top"></div>
       <div class="row viewer">
+        <div class="container-fluid" ng-show="page1=='all' && page2 == 'calendar'">
+          <div class="row block">
+            <div class="title">
+              <span>实验日历</span>
+              <button id="add-experiment-btn" class="btn btn-info btn-sm" style="float:right" title="添加实验" ng-click="addExperimentDialog.open=true">
+                添加实验
+              </button>
+              <dialog ng-show="addExperimentDialog.open" for="add-experiment-btn" close="addExperimentDialog.open=false" close-action="esc">
+                <div dialog-title>添加实验课程</div>
+                <div dialog-content>
+                  <div class="form-group">
+                    <label for="exp-combo">实验名</label>
+                    <div id="exp-combo"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="teacher-combo">教师</label>
+                    <div id="teacher-combo"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="time-combo">实验时间</label>
+                    <div id="time-combo"></div>
+                    <input name="cid" ng-model="addExperimentDialog.chose_eid" hidden>
+                  </div>
+                </div>
+                <div dialog-buttons><button ng-click="add_class(addExperimentDialog.eid);$close();" autofocus>添加</button><button ng-click="$close()">取消</button></div>
+              </dialog>
+
+            </div>
+            <div ng-show="!calendar_hidden" id="experiment-calendar"  class="calendar" ng-model="eventSources" calendar="calendar" ui-calendar="uiConfig.calendar"></div>
+
+          </div>
+        </div>
+        <div class="container-fluid" ng-show="page1=='all' && page2 == 'explist'">
+          <div class="row">
+            <div class="col-md-9">
+              <div class="row block" ng-repeat="report in reports.content">
+                <a href="javascript:;" ng-click="changeReport(report.rid)"><span style="font-size:29px" ng-bind-html="report.experiment_name"></span></a>
+                <span style="font-size: 17px;color: #888;margin-left: 30px;" ng-bind-html="report.experiment.week"></span>
+                <button ng-click="deleteDialog[report.experiment.eid]=true" class="btn btn-danger abc">删除</button>
+                <dialog ng-show="deleteDialog[report.experiment.eid]" close="deleteDialog[report.experiment.eid]=false" close-action="esc">
+                  <div dialog-title>添加实验课程</div>
+                  <div dialog-content>
+                    报告将不可恢复，确认删除?
+                  </div>
+                  <div dialog-buttons><button class="btn btn-danger" ng-click="delete_class(report.experiment.eid);$close();" autofocus>删除</button><button class="btn btn-normal" ng-click="$close()">取消</button></div>
+                </dialog>
+                <div style="float:right">
+
+                  <span style="display:block;" ng-if="!report.is_submit"><i class="icon-circle" style="font-size:14px;color:#f1c40f;" ></i>可提交</span>
+                  <span style="display:block;" ng-if ="report.closed&&!report.is_submit"><i class="icon-circle" style="font-size:14px;color:#e74c3c;"></i>已超时</span>
+                  <span style="display:block;" ng-if="report.closed&&report.is_submit&&report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#3498db;"></i>已出分</span>
+                  <span style="display:block;" ng-if="report.is_submit&&!report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#2ecc71;"></i>已提交</span>
+
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="row block">
+                <div class="title">实验报告完成情况</div>
+                <div id="report_state_chart"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid" ng-show="page1=='all'&& page2 == 'news'">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="row block">
+                <div class="title">
+                  <span>实验</span>
+                </div>
+                <div class="container-fluid">
+
+                    <div ng-repeat="report in reports.content" class="row">
+                      <span class="news-title"><nobr ng-bind-html="report.experiment_name"></nobr></span>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-9">
+
+              <div class="row block">
+                <div class="title">
+                  <span>实验周知</span>
+                </div>
+                <div class="container-fluid">
+                    <div ng-repeat="report in reports.content" class="row">
+                      <span class="news-title"><nobr ng-bind-html="report.experiment_name"></nobr></span>
+                      <span style="float:right" ng-bind-html="report.experiment.week"></span>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="container-fluid"  ng-show="page1=='report'">
           <dialog ng-show="dialogs.add_row_data.open" for="add-row-data" close="dialogs.add_row_data.open=false" close-action="esc outerchick">
-                                <div dialog-title>添加原始数据表</div>
-                                <div dialog-content>
-                                  <div class="input-group input-group-sm" style="width:200px;">
-                                    <span class="input-group-addon">标题</span>
-                                    <input type="text" class="form-control" ng-model="dialogs.add_row_data.name" placeholder="未命名">
-                                </div>
-                                  <br>
-                                  <div class="input-group input-group-sm" style="width:200px;">
-                                    <span class="input-group-addon">行数</span>
-                                    <input type="number" class="form-control" ng-model="dialogs.add_row_data.row" min=1 placeholder="10">
-                                </div>
-                                  <br>
-                                  <div class="input-group input-group-sm" style="width:200px;">
-                                    <span class="input-group-addon">列数</span>
-                                    <input type="number"  min=1  class="form-control" ng-model="dialogs.add_row_data.col" placeholder="10">
-                                </div>
-                                </div>
-                              <div dialog-buttons><button ng-click="create_data_table(dialogs.add_row_data.name, dialogs.add_row_data.row,dialogs.add_row_data.col);$close()" autofocus>确定</button><button ng-click="$close()">取消</button></div>
-                            </dialog>
+            <div dialog-title>添加原始数据表</div>
+            <div dialog-content>
+              <div class="input-group input-group-sm" style="width:200px;">
+                <span class="input-group-addon">标题</span>
+                <input type="text" class="form-control" ng-model="dialogs.add_row_data.name" placeholder="未命名">
+              </div>
+              <br>
+              <div class="input-group input-group-sm" style="width:200px;">
+                <span class="input-group-addon">行数</span>
+                <input type="number" class="form-control" ng-model="dialogs.add_row_data.row" min=1 placeholder="10">
+              </div>
+              <br>
+              <div class="input-group input-group-sm" style="width:200px;">
+                <span class="input-group-addon">列数</span>
+                <input type="number"  min=1  class="form-control" ng-model="dialogs.add_row_data.col" placeholder="10">
+              </div>
+            </div>
+            <div dialog-buttons><button ng-click="create_data_table(dialogs.add_row_data.name, dialogs.add_row_data.row,dialogs.add_row_data.col);$close()" autofocus>确定</button><button ng-click="$close()">取消</button></div>
+          </dialog>
           <div class="row block">
             <a href="javascript:;" ng-click="changeReport(selected_report.rid)"><span style="font-size:29px" ng-bind-html="selected_report.experiment_name"></span></a>
             <span style="font-size: 17px;color: #888;margin-left: 30px;" ng-bind-html="selected_report.experiment.week"></span>
@@ -139,8 +242,7 @@
           </div>
           <div class="row">
             <div class="col-md-9">
-
-              <div class="row block">
+              <div class="row block" id="raw_data">
                 <div class="title">
                   <span>原始数据</span>
                   <div class="btn-group" style="float:right">
@@ -154,13 +256,13 @@
                 <div class="content" id="raw_data_content" ng-show="editing_block !='raw_data'"></div>
                 <div id="raw_data_editor" ng-show="editing_block =='raw_data'"></div>
                 <!--<div ngf-select="uploadImages('raw_data',$files)" ngf-drop="uploadImages('raw_data',$files)" ng-show="editing_block =='raw_data'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="raw_data-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="raw_data-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
 
               </div>
               {% if Config.show_extra_block %}
-              <div class="row block">
+              <div class="row block" id="objective">
                 <div class="title">
                   <span>实验目的</span>
                   <div class="btn-group" style="float:right">
@@ -172,12 +274,11 @@
                 <div class="content drag-wrap" id="objective_content" ng-show="editing_block !='objective'"></div>
                 <div id="objective_editor" ng-show="editing_block =='objective'"></div>
                 <!--<div ngf-select="uploadImages('objective',$files)" ngf-drop="uploadImages('objective',$files)" ng-show="editing_block =='objective'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="objective-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="objective-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
               </div>
-
-              <div class="row block">
+              <div class="row block" id="principle">
                 <div class="title">
                   <span>实验原理</span>
                   <div class="btn-group" style="float:right">
@@ -189,12 +290,11 @@
                 <div class="content drag-wrap" id="principle_content" ng-show="editing_block !='principle'"></div>
                 <div id="principle_editor" ng-show="editing_block =='principle'"></div>
                 <!--<div ngf-select="uploadImages('principle',$files)" ngf-drop="uploadImages('principle',$files)" ng-show="editing_block =='principle'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="principle-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="principle-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
               </div>
-
-              <div class="row block">
+              <div class="row block" id="process">
                 <div class="title">
                   <span>实验内容</span>
                   <div class="btn-group" style="float:right">
@@ -206,14 +306,12 @@
                 <div class="content drag-wrap" id="process_content" ng-show="editing_block !='process'"></div>
                 <div id="process_editor" ng-show="editing_block =='process'"></div>
                 <!--<div ngf-select="uploadImages('process',$files)" ngf-drop="uploadImages('process',$files)" ng-show="editing_block =='process'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="process-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="process-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
               </div>
-
               {% endif %}
-
-              <div class="row block">
+              <div class="row block" id="data_processing">
                 <div class="title">
                   <span>数据处理</span>
                   <div class="btn-group" style="float:right">
@@ -225,12 +323,11 @@
                 <div class="content drag-wrap" id="data_processing_content" ng-show="editing_block !='data_processing'"></div>
                 <div id="data_processing_editor" ng-show="editing_block =='data_processing'"></div>
                 <!--<div ngf-select="uploadImages('data_processing',$files)" ngf-drop="uploadImages('data_processing',$files)" ng-show="editing_block =='data_processing'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="data_processing-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="data_processing-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
               </div>
-
-              <div class="row block">
+              <div class="row block" id="instrument">
                 <div class="title">
                   <span>实验体会</span>
                   <div class="btn-group" style="float:right">
@@ -242,12 +339,11 @@
                 <div class="content drag-wrap" id="instrument_content" ng-show="editing_block !='instrument'"></div>
                 <div id="instrument_editor" ng-show="editing_block =='instrument'"></div>
                 <!--<div ngf-select="uploadImages('instrument',$files)" ngf-drop="uploadImages('instrument',$files)" ng-show="editing_block =='instrument'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="instrument-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="instrument-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
               </div>
-
-              <div class="row block">
+              <div class="row block" id="thinking">
                 <div class="title">
                   <span>实验思考</span>
                   <div class="btn-group" style="float:right">
@@ -259,8 +355,8 @@
                 <div class="content drag-wrap" id="thinking_content" ng-show="editing_block !='thinking'"></div>
                 <div id="thinking_editor" ng-show="editing_block =='thinking'"></div>
                 <!--<div ngf-select="uploadImages('thinking',$files)" ngf-drop="uploadImages('thinking',$files)" ng-show="editing_block =='thinking'" ngf-multiple="true" ngf-pattern="'image/*'"-->
-                     <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
-                  <!--<span id="thinking-image-upload-status">拖拽图片至此添加</span>-->
+                <!--ngf-accept="'image/*'" ngf-max-size="1MB" ngf-min-height="100" class="drop-box">-->
+                <!--<span id="thinking-image-upload-status">拖拽图片至此添加</span>-->
                 <!--</div>-->
               </div>
 
@@ -370,84 +466,22 @@
               <div class="row block">
                 <div class="title">
                   <span>实验文档上传</span>
+                  <div class="btn-group" style="float:right">
+                    <button class="btn btn-info btn-sm ng-scope" ng-show="!selected_report.is_submit" ngf-select="uploadFiles('report',$files)" ngf-multiple="true"
+                     ngf-max-size="50MB">选择</button>
+                  </div>
                 </div>
-                <div ng-repeat="file in selected_report.content.attach_files" class="content">
-                  <a ng-href="{% templatetag openvariable %} file.url {% templatetag closevariable %}" ng-bind-html="file.name" download></a>
+                <div ng-repeat="file in selected_report.content.attach_files" class="">
+                  <a class="overflow-title" style="width:70%;" ng-href="{% templatetag openvariable %} file.url {% templatetag closevariable %}" download>
+                    <nobr ng-bind-html="file.name"></nobr>
+                  </a>
+                  <a href="javascript:;" ng-click="delete_file(file.fid)" title="删除文件" style="float:right;"><i class="icon-trash"></i></a>
                 </div>
-                <div ng-show="!selected_report.is_submit" ngf-select="uploadFiles('report',$files)" ngf-drop="uploadFiles('report',$files)" ngf-multiple="true"
-                     ngf-max-size="50MB" style="height:200px;" class="drop-box">
-                  <span id="report-file-upload-status">拖拽文件至此上传</span>
-                </div>
+                <!--<div ng-show="!selected_report.is_submit" ngf-select="uploadFiles('report',$files)" ngf-drop="uploadFiles('report',$files)" ngf-multiple="true"-->
+                     <!--ngf-max-size="50MB" style="height:200px;" class="drop-box">-->
+                  <!--<span id="report-file-upload-status">拖拽文件至此上传</span>-->
+                <!--</div>-->
               </div>
-            </div>
-          </div>
-        </div>
-        <div class="container-fluid" ng-show="page1=='all'">
-
-          <div class="row block">
-            <div class="title">
-              <span>实验日历</span>
-              <button class="btn btn-success btn-sm" title="收起日历" style="float:right;" ng-click="showHideCalendar()">
-                <i ng-if="!calendar_hidden" class="icon-chevron-up"></i>
-                <i ng-if="calendar_hidden" class="icon-chevron-down"></i>
-              </button>
-              <button id="add-experiment-btn" class="btn btn-info btn-sm" style="float:right" title="添加实验" ng-click="addExperimentDialog.open=true">
-                <i class="icon-plus"></i>
-              </button>
-              <dialog ng-show="addExperimentDialog.open" for="add-experiment-btn" close="addExperimentDialog.open=false" close-action="esc">
-                <div dialog-title>添加实验课程</div>
-                <div dialog-content>
-                  <div class="form-group">
-                    <label for="exp-combo">实验名</label>
-                    <div id="exp-combo"></div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="teacher-combo">教师</label>
-                    <div id="teacher-combo"></div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="time-combo">实验时间</label>
-                    <div id="time-combo"></div>
-                    <input name="cid" ng-model="addExperimentDialog.chose_eid" hidden>
-                  </div>
-                </div>
-                <div dialog-buttons><button ng-click="add_class(addExperimentDialog.eid);$close();" autofocus>添加</button><button ng-click="$close()">取消</button></div>
-              </dialog>
-
-            </div>
-            <div ng-show="!calendar_hidden" id="experiment-calendar"  class="calendar" ng-model="eventSources" calendar="calendar" ui-calendar="uiConfig.calendar"></div>
-          </div>
-          <div class="row">
-            <div class="col-md-9">
-              <div class="row block" ng-repeat="report in reports.content">
-                <a href="javascript:;" ng-click="changeReport(report.rid)"><span style="font-size:29px" ng-bind-html="report.experiment_name"></span></a>
-                <span style="font-size: 17px;color: #888;margin-left: 30px;" ng-bind-html="report.experiment.week"></span>
-                <button ng-click="deleteDialog[report.experiment.eid]=true" class="btn btn-danger abc">Delete</button>
-                <dialog ng-show="deleteDialog[report.experiment.eid]" close="deleteDialog[report.experiment.eid]=false" close-action="esc">
-                  <div dialog-title>添加实验课程</div>
-                  <div dialog-content>
-                    报告将不可恢复，确认删除?
-                  </div>
-                  <div dialog-buttons><button class="btn btn-danger" ng-click="delete_class(report.experiment.eid);$close();" autofocus>删除</button><button class="btn btn-normal" ng-click="$close()">取消</button></div>
-                </dialog>
-                <div style="float:right">
-
-                  <span style="display:block;" ng-if="!report.is_submit"><i class="icon-circle" style="font-size:14px;color:#f1c40f;" ></i>可提交</span>
-                  <span style="display:block;" ng-if ="report.closed&&!report.is_submit"><i class="icon-circle" style="font-size:14px;color:#e74c3c;"></i>已超时</span>
-                  <span style="display:block;" ng-if="report.closed&&report.is_submit&&report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#3498db;"></i>已出分</span>
-                  <span style="display:block;" ng-if="report.is_submit&&!report.is_corrected"><i class="icon-circle" style="font-size:14px;color:#2ecc71;"></i>已提交</span>
-
-                </div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="row block">
-                <div class="title">实验报告完成情况</div>
-                <div id="report_state_chart"></div>
-              </div>
-
             </div>
           </div>
         </div>

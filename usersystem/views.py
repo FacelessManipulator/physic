@@ -2,7 +2,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.http.response import HttpResponse, JsonResponse
-from models import UserBaseInfo, Report, WebsiteConfig, ReportTag, Institute, Major, StudentClass
+from models import (UserBaseInfo, Report, WebsiteConfig, ReportTag,
+                    Institute, Major, StudentClass, AttachFile)
 from captcha.models import CaptchaStore
 from django.contrib.auth.models import User
 from captcha.helpers import captcha_image_url
@@ -468,13 +469,35 @@ def receive_file(request):
                 if report.user.user.username != user.user.username or not report.experiment.base.is_active:
                     return JsonResponse({'status': 501, 'msg': '权限不足'})
                 attach = report.file.create(attach_file=attach_file,name=attach_file.name)
-                return JsonResponse({'status': 201, 'msg': '上传成功', 'content': {'url': attach.attach_file.url, 'name': attach.name}})
+                return JsonResponse({'status': 201, 'msg': '上传成功', 'content': {'fid':attach.pk, 'url': attach.attach_file.url, 'name': attach.name}})
             else:
                 return JsonResponse({'status': 503, 'msg': '上传失败'})
         except Exception,e:
             return JsonResponse({'status': 503, 'msg': '上传失败'})
     else:
         return JsonResponse({'status': 505, 'msg': '不支持的操作'})
+
+@login_required
+def delete_file(request):
+    user = request.user.userBaseInfo
+    if request.method == 'POST':
+        fid = request.POST.get('fid')
+        rid = request.POST.get('rid')
+        if rid is not None and fid is not None:
+            try:
+                report = Report.objects.get(rid=rid)
+                if report.user.user.username != user.user.username or report.is_submit:
+                    return JsonResponse({'status': 501, 'msg': '权限不足'})
+                report.file.get(pk=fid).delete()
+                return JsonResponse({'status': 201, 'msg': '删除成功'})
+            except Exception,e:
+                return JsonResponse({'status': 503, 'msg': '删除失败'})
+        else:
+            return JsonResponse({'status': 503, 'msg': '删除失败'})
+    else:
+        return JsonResponse({'status': 505, 'msg': '不支持的操作'})
+
+
 
 @login_required
 def opt_website_setting(request):

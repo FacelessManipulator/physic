@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^report/modify$', views.modify_report),
     url(r'^report/image$', views.receive_image),
     url(r'^report/file$', views.receive_file),
+    url(r'^report/file/delete$', views.delete_file),
     url(r'^report/tag', views.opt_tag),
     url(r'^report/data-table/add', views.save_data_table),
     url(r'^report/data-table/delete', views.delete_data_table),

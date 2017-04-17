@@ -16,7 +16,7 @@ experimentListApp.config(function($httpProvider) {
 });
 experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$http, $compile,Upload,$timeout,uiCalendarConfig){
     $scope.page1 = 'all';
-    $scope.page2 = '';
+    $scope.page2 = 'calendar';
     $scope.editing_block = '';
     $scope.events = [];
     $scope.notice = {open: false, msg:''};
@@ -48,6 +48,9 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                 _parentElement.removeChild(_element);
          }
     }
+    $scope.scrollTo = function(id){
+        $("html, body").animate({scrollTop: $(id).offset().top-40 }, {duration: 500,easing: "swing"});
+    }
     $scope.countDictFromArray = function(ary,key,value){
         var count = 0;
         for(var i in ary){
@@ -60,6 +63,14 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
          for(var i in ary){
              if(ary[i][key] == value)
                  return ary[i];
+         }
+    };
+    $scope.deleteDictFromArray= function(ary,key,value){
+         for(var i = 0; i < ary.length; i++){
+             if(ary[i][key] == value){
+                ary.splice(i, 1);
+                i--;
+             }
          }
     };
     $scope.grab_unique = function(ary, key){
@@ -454,6 +465,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
     }
     $scope.render_all = function(){
         $scope.page1 = 'all';
+        $scope.page2 = 'calendar';
         $scope.reports.loaded = true;
         var closed = $scope.countDictFromArray($scope.reports.content, 'closed', true);
         var is_corrected = $scope.countDictFromArray($scope.reports.content, 'is_corrected', true);
@@ -557,12 +569,18 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                 ['teacher_name'],[$scope.addExperimentDialog.teacher_set[0].teacher_name]);
             $("#time-combo").igCombo('option', 'dataSource',$scope.addExperimentDialog.time_set);
             $("#time-combo").igCombo('dataBind');
+            if($scope.addExperimentDialog.time_set.length>0){
+                $scope.addExperimentDialog.eid = $scope.addExperimentDialog.time_set[0].eid;
+            }
         }
     };
     $scope.changeTeacher = function(event, ui){
         $scope.addExperimentDialog.time_set = $scope.filterFromArray($scope.addExperimentDialog.teacher_set , ['teacher_name'],[ui.items[0].data.teacher_name]);
         $("#time-combo").igCombo('option', 'dataSource', $scope.addExperimentDialog.time_set);
         $("#time-combo").igCombo('dataBind');
+        if($scope.addExperimentDialog.time_set.length>0){
+            $scope.addExperimentDialog.eid = $scope.addExperimentDialog.time_set[0].eid;
+        }
     };
     $scope.changeTime = function(event, ui){
         $scope.addExperimentDialog.eid = ui.items[0].data.eid;
@@ -696,6 +714,11 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
             });
         }
     };
+    $scope.delete_file = function(fid){
+        $scope.modifyData('/user/report/file/delete', {fid:fid, rid:$scope.selected_report.content.rid}, undefined, undefined, function(){
+                $scope.deleteDictFromArray($scope.selected_report.content.attach_files, 'fid', fid);
+            });
+    };
     $scope.save_data_table = function(id){
         var data_table = $scope.selected_report.content.data[id];
         if(typeof(data_table) === 'undefined')
@@ -703,9 +726,13 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
         var serialized = {id:data_table.id, rid: data_table.rid, data: data_table.data.toString(),
             name: data_table.name, col: data_table.data[0].length, row: data_table.data.length};
 
-        $scope.modifyData('/user/report/data-table/add', serialized, undefined, undefined, function(){
-                data_table.local = false;
-            });
+        $scope.modifyData('/user/report/data-table/add', serialized, undefined, undefined, SuccessNoticePopup);
+
+        function SuccessNoticePopup(data){
+            data_table.local = false;
+            $scope.notice.msg = '<i class="icon-bell-alt"></i><span style="margin-left:10px;" >保存成功</span>';
+            $scope.notice.open = true;
+        }
     };
     $scope.handleDragLeave = function (evt) {
             evt.stopPropagation();

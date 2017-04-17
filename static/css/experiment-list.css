@@ -429,3 +429,8 @@ body{
     color: #3498DB;
     box-shadow: 1px 1px 1px 1px rgb(146, 146, 146);
 }
+.overflow-title{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
