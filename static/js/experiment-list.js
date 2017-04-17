@@ -19,6 +19,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
     $scope.page2 = '';
     $scope.editing_block = '';
     $scope.events = [];
+    $scope.notice = {open: false, msg:''};
     $scope.submitDialog = false;
     $scope.calendar_hidden = false;
     $scope.objective={'editing':false, 'loaded':false};
@@ -113,7 +114,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                 $('#error').html("<i style='color:red;margin-right:15px;' class='icon-warning-sign'></i>连接超时,请刷新后在试");
             });
     };
-    $scope.modifyData = function(url, data, origin, id, success){
+    $scope.modifyData = function(url, data, origin, id, success, failed){
         $http.post(url,data,{})
             .then(
             function successCallback(response){
@@ -123,7 +124,7 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                         break;
                     case 201:
                         if(success)
-                            success();
+                            success(response.data);
                         else{
                             $('#success').html("<i style='color:green;margin-right:15px;' class='icon-ok '></i>登陆完成，正在跳转...");
                             if(origin){
@@ -134,6 +135,10 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                                 }
                             }
                         }
+                        break;
+                    default:
+                        if(failed)
+                           failed(response.data);
                         break;
                 }
             },
@@ -195,7 +200,8 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
             showCopyPasteToolbar: false,
             showInsertObjectToolbar: true,
             paste: function(evt, ui){
-                $("#ajax-state").text("粘贴禁止");
+                $scope.notice.msg = '<i class="icon-copy"></i><span style="margin-left:10px;" >禁止粘贴</span>';
+                $scope.notice.open = true;
 
                 $timeout(function(){
                     $("#"+ui.owner.element.attr("id")).igHtmlEditor("executeAction", "undo");
@@ -250,7 +256,8 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
             value:data,
             showCopyPasteToolbar: false,
             paste: function(evt, ui){
-                 $("#ajax-state").text("粘贴禁止！");
+                $scope.notice.msg = '<i class="icon-copy"></i><span style="margin-left:10px;" >禁止粘贴</span>';
+                $scope.notice.open = true;
 
                 $timeout(function(){
                     $("#"+ui.owner.element.attr("id")).igHtmlEditor("executeAction", "undo");
@@ -303,8 +310,15 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
     $scope.editor_save = function(block){
         $scope.selected_report.content[block].data = $("#" +block+ "_editor").igHtmlEditor("getContent", "html");
         $("#"+block+"_content").html($scope.selected_report.content[block].data);
-        $scope.modifyData('/user/report/modify',{'block':block,'rid':$scope.selected_report.rid , 'content': $scope.selected_report.content[block].data});
+        $scope.modifyData('/user/report/modify',
+            {'block':block,'rid':$scope.selected_report.rid , 'content': $scope.selected_report.content[block].data},
+            undefined, undefined,NoticePopup, NoticePopup
+            );
         $scope.editing_block = '';
+        function NoticePopup(data){
+            $scope.notice.msg = '<i class="icon-bell-alt"></i><span style="margin-left:10px;" >'+data.msg+'</span>';
+            $scope.notice.open = true;
+        }
     };
     $scope.editor_cancel = function(block){
         $("#" +block+ "_editor").igHtmlEditor("setContent", $scope.selected_report.content[block].data,'html');
@@ -326,6 +340,8 @@ experimentListApp.controller('experimentCtrl',function experimentCtrl($scope,$ht
                 }).then(function (resp) {
                     if(resp.data.status == 201){
                         $("#"+block+"-image-upload-status").html("图片上传成功");
+                        $scope.notice.msg = '<i class="icon-bar-chart"></i><span style="margin-left:10px;" >图片已上传</span>';
+                        $scope.notice.open = true;
                         $scope.insert_image(block, resp.data.url);
                         $timeout(function(){
                             $("#"+$scope.editing_block+"-dropZone").remove();

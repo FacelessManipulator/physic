@@ -50,7 +50,10 @@
 
 <script src="/static/js/math-editor.js"></script>
 <a class="back-to-top" href="#" style="display: inline;"><i class="icon-angle-up"></i></a>
+
 <div ng-app="physiclab.experimentList" class="experiment-list-page container-fluid" id="experimentApp" ng-controller="experimentCtrl as experimentCtrl">
+  <notice ng-show="notice.open" duration="2000" top="80%" close="notice.open=false" fixed class="notice" ng-bind-html="notice.msg">
+</notice>
   <div class="row">
     <div class="col-xs-3 col-md-2 div-inverse" style="position:fixed;height: 100%;border:0px;z-index:999;">
       <div class="row" style="height:40px;">
