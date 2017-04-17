@@ -88,5 +88,12 @@ class Experiment(models.Model):
             pass
         return dic
 
-
+class News(models.Model):
+    nid = models.AutoField(primary_key=True)
+    content = models.TextField()
+    title = models.CharField(max_length=512)
+    time = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(to='usersystem.UserBaseInfo', related_name='news', on_delete=models.CASCADE)
+    experiment = models.ForeignKey(to='BaseExperiment', related_name='news', on_delete=models.CASCADE, null=True)
+    sub_exp = models.ForeignKey(to='Experiment', related_name='news', on_delete=models.CASCADE, null=True)
 
