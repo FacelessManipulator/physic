@@ -416,3 +416,16 @@ body{
     position: absolute;
     z-index : 0;
 }
+
+.notice{
+    position: fixed;
+    top: 80%!important;
+    font-size: .9em;
+    background: white;
+    border: solid 1px white;
+    padding: 0px 10px;
+    cursor: pointer;
+    border-radius: 30px;
+    color: #3498DB;
+    box-shadow: 1px 1px 1px 1px rgb(146, 146, 146);
+}
